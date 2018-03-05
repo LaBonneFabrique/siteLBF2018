@@ -17,3 +17,4 @@ yarn-error.log*
 *.ntvs*
 *.njsproj
 *.sln
+/src/constants/graphCoolURI.js
