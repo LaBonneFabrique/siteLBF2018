@@ -1,24 +1,35 @@
 <template>
   <q-page>
-        <q-card v-for="(activite, index) in affichageActivites" inline style="width: 350px; margin-bottom: 5px; margin-left: 20px" :key="activite.id" >
+        <q-card v-for="(activite, index) in affichageActivites" inline style="width: 250px; margin-bottom: 5px; margin-left: 20px; border: 1px solid #cbcbcb" :key="activite.id" class="no-shadow">
       <q-card-media>
         <img height="150" width="350" :src="activite.image" />
       </q-card-media>
-      <q-card-title style="padding: 5px; margin-top: 5px">
+      <q-card-title class="no-padding no-margin">
         {{activite.titre}}
       </q-card-title>
       <q-card-main>
+
         <vue-markdown :source="activite.description"></vue-markdown>
+        <q-btn
+        color="primary"
+        dense flat
+        size ="12px"
+        icon = "fa fa-plus"
+        class = "no-shadow float-right"
+        label = "en savoir plus"
+        >
+        </q-btn>
       </q-card-main>
-      <q-card-separator />
-      <q-card-actions align="end">
-        <div style="margin-top: 8px" v-if="activite.checkInscription">{{nbPlacesRestantes(index)}}</div>
+      <q-card-separator style="clear: both"/>
+      <q-card-actions align="end" class="no-padding">
+        <div style="margin-top: 2px; font-size: 12pt;" v-if="activite.checkInscription">{{nbPlacesRestantes(index)}}</div>
         <q-btn flat inverted color="amber-8" @click="creationModalInscription(activite)" v-if="activite.checkInscription"
         :disable="isComplet(activite) || estTropTard(activite.dateDebut)"
         icon="far fa-edit"
+        size="sm"
         >
           <q-tooltip anchor="bottom middle" self="top middle" v-if="estIdentifie && estTropTard(activite.dateDebut)">
-            La date est dépassée, inscription impossible.
+            La date limite d'inscription est dépassée.
           </q-tooltip>
         <q-tooltip anchor="bottom middle" self="top middle" v-if="estIdentifie && !estTropTard(activite.dateDebut)">
           Inscription
@@ -119,15 +130,11 @@ export default {
         }
       },
       async result (result) {
-        console.log(result)
         this.affichageActivites = []
         var listeActivites = []
         this.listeActivites = []
         var listeUnique = ''
-        // var indice = 0
         for (let activite of result.data.allActivites) {
-        // result.data.allActivites.forEach(async (activite, index) => {
-          console.log(activite.type)
           switch (activite.type) {
             case 'Ateliers':
               if (listeUnique.indexOf(activite.idCycle) < 0) {
@@ -163,9 +170,9 @@ export default {
                 }).then((data) => {
                   const illustration = data.data.allActivitesIllustrations[0]
                   if (illustration) {
-                    imageIllu = cl.url(illustration.idImage + '.' + illustration.format, { width: 350, height: 150, crop: 'fill', gravity: 'auto' })
+                    imageIllu = cl.url(illustration.idImage + '.' + illustration.format, { width: 250, height: 150, crop: 'fill', gravity: 'auto' })
                   } else {
-                    imageIllu = cl.url('logoLBFmoyen_p1zcu0.png', { width: 350, height: 150, crop: 'fill', gravity: 'auto' })
+                    imageIllu = cl.url('logoLBFmoyen_p1zcu0.png', { width: 250, height: 150, crop: 'fill', gravity: 'auto' })
                   }
                 }).catch((error) => {
                   console.log(error)
@@ -477,7 +484,6 @@ export default {
       // this.$router.push({name: 'accueil'})
     },
     estTropTard (dateDebutAtelier) {
-      console.log(dateDebutAtelier)
       let validite = new Date(dateDebutAtelier).getTime()
       let todayTS = Date.now()
       console.log(validite - todayTS)

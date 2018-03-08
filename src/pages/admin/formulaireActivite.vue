@@ -552,6 +552,14 @@ export default {
     },
     async sauvegardeActivite (publie) {
       let descriptionDemine = ''
+      this.$q.loading.show({
+        spinner: QSpinnerGears,
+        message: 'Mise à jour du calendrier Google',
+        messageColor: 'white',
+        spinnerSize: 150, // in pixels
+        spinnerColor: 'white',
+        customClass: 'bg-test'
+      })
       await this.$apollo.mutate({
         mutation: DEMINER_HTML,
         variables: {
@@ -567,14 +575,6 @@ export default {
       let idCycle = this.generateId()
       // let oldPublie = this.dataEvent.publie
       if (publie) {
-        this.$q.loading.show({
-          spinner: QSpinnerGears,
-          message: 'Mise à jour du calendrier Google',
-          messageColor: 'white',
-          spinnerSize: 150, // in pixels
-          spinnerColor: 'white',
-          customClass: 'bg-test'
-        })
         await this.addActiviteToGCalendar('confirmed')
       }
       if (!publie) {
