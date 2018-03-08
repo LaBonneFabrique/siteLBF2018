@@ -32,7 +32,7 @@ query listeActivites {
 
 export const QUERY_ALL_ACTIVITES_ASC = gql`
 query listeActivites {
-  allActivites(orderBy: dateDebut_ASC) {
+  allActivites(orderBy: dateDebut_ASC, filter: {publie: true}) {
     id
     idCycle
     titreActivite
@@ -52,6 +52,7 @@ query listeActivites {
       membreId
       cycleId
     }
+    type
   }
 }
 `

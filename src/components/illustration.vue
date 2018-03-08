@@ -43,10 +43,6 @@
         </q-btn>
       </div>
     </div>
-      <!-- <div v-if="loadIllu" class="row items-center justify-center" id='illuProcessing'>
-        <q-spinner-gears size="30px" color="primary"></q-spinner-gears>
-        <div class="justify-center messageProcess">{{message}}</div>
-    </div> -->
     <vue-dropzone
       ref='illustrationDropzone'
       id='illuDropzone'
@@ -125,6 +121,9 @@ export default {
         })
       }
     }
+  },
+  mounted () {
+    this.choixIllustration = this.currentImage
   },
   methods: {
     trouverImage: function (idImage) {

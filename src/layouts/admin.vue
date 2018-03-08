@@ -23,42 +23,75 @@
       >
         <q-tooltip anchor="bottom middle" self="top middle">Retour au site</q-tooltip>
       </q-btn>
-      <q-btn
+      <q-btn-dropdown
       icon="fas fa-cogs"
       color = "grey"
       flat inverted dense
       size = "xl"
-      @click="$router.push({name: 'lesateliers'})"
       >
-        <q-tooltip anchor="bottom middle" self="top middle">Les ateliers</q-tooltip>
-      </q-btn>
-      <q-btn
+      <q-list link class="shadow-1">
+    <q-item v-close-overlay :to="{name: 'lesateliers'}">
+            <q-item-side>
+        <q-icon name="fas fa-th-list" />
+      </q-item-side>
+      <q-item-main>
+        <q-item-tile label>Tous les ateliers</q-item-tile>
+      </q-item-main>
+    </q-item>
+    <q-item v-close-overlay :to="{name: 'ajoutAtelier'}">
+      <q-item-side>
+        <q-icon name="fas fa-plus" />
+      </q-item-side>
+      <q-item-main>
+        <q-item-tile label>Créer un nouvel atelier</q-item-tile>
+      </q-item-main>
+    </q-item>
+  </q-list>
+      </q-btn-dropdown>
+      <q-btn-dropdown
         icon="far fa-newspaper"
       color = "grey"
         flat inverted dense
-        disable
         size="xl"
       >
-        <q-tooltip anchor="bottom middle" self="top middle">Les nouvelles</q-tooltip>
-      </q-btn>
-      <q-btn
-        icon="fas fa-bullhorn"
-      color = "grey"
-        flat inverted dense
-        disable
-        size="xl"
-      >
-        <q-chip floating color="dark" small square class="shadow-1">2</q-chip>
-        <q-tooltip anchor="bottom middle" self="top middle">Les petites annonces</q-tooltip>
-      </q-btn>
-      <q-btn
+      <q-list link class="shadow-1">
+    <q-item v-close-overlay :to="{name: 'listeNews'}">
+            <q-item-side>
+        <q-icon name="fas fa-th-list" />
+      </q-item-side>
+      <q-item-main>
+        <q-item-tile label>Toutes les infos</q-item-tile>
+      </q-item-main>
+    </q-item>
+    <q-item v-close-overlay :to="{name: 'news'}">
+      <q-item-side>
+        <q-icon name="fas fa-plus" />
+      </q-item-side>
+      <q-item-main>
+        <q-item-tile label>Une nouvelle infos</q-item-tile>
+      </q-item-main>
+    </q-item>
+  </q-list>
+      </q-btn-dropdown>
+            <q-btn
         icon="fas fa-users"
-      color = "grey"
+        color = "grey"
         flat inverted dense
         size = "xl"
         @click="$router.push({name: 'listeUsers'})"
       >
         <q-tooltip anchor="bottom middle" self="top middle">Les adhérents</q-tooltip>
+      </q-btn>
+      <q-btn
+        icon="fas fa-bullhorn"
+        color = "grey"
+        flat inverted dense
+        disable
+        size="xl"
+        class="relative-position"
+      >
+        <q-chip floating color="dark" small square class="shadow-1">2</q-chip>
+        <q-tooltip anchor="bottom middle" self="top middle">Les petites annonces</q-tooltip>
       </q-btn>
       <q-btn
         icon="fas fa-at"
@@ -68,6 +101,24 @@
         size = "xl"
       >
         <q-tooltip anchor="bottom middle" self="top middle">Envoyer un mail</q-tooltip>
+      </q-btn>
+      <q-btn
+        icon="far fa-images"
+      color = "grey"
+        flat inverted dense
+        disable
+        size = "xl"
+      >
+        <q-tooltip anchor="bottom middle" self="top middle">Gérer les images</q-tooltip>
+      </q-btn>
+      <q-btn
+        icon="fas fa-tags"
+      color = "grey"
+        flat inverted dense
+        disable
+        size = "xl"
+      >
+        <q-tooltip anchor="bottom middle" self="top middle">Gérer les tags</q-tooltip>
       </q-btn>
       <q-btn
         icon="fas fa-sign-out-alt"

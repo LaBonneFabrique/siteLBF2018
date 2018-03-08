@@ -43,7 +43,7 @@ export default [
         path: 'nouvelAtelier',
         component: () => import('pages/admin/formulaireActivite'),
         props: {type: 'Ateliers'},
-        name: 'ajoutActivite'
+        name: 'ajoutAtelier'
       },
       {
         path: 'listeAteliers',
@@ -61,9 +61,20 @@ export default [
         component: () => import('pages/admin/formulaireActivite')
       },
       {
-        path: 'creerInfo',
-        name: 'creerInfo',
+        path: 'news',
+        name: 'news',
         component: () => import('pages/admin/news')
+      },
+      {
+        path: 'modifierNews/:newsId',
+        name: 'modifierNews',
+        props: true,
+        component: () => import('pages/admin/news')
+      },
+      {
+        path: 'listeNews',
+        name: 'listeNews',
+        component: () => import('pages/admin/listeNews')
       }
     ]
   },

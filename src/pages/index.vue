@@ -14,13 +14,16 @@
       <q-card-actions align="end">
         <div style="margin-top: 8px" v-if="activite.checkInscription">{{nbPlacesRestantes(index)}}</div>
         <q-btn flat inverted color="amber-8" @click="creationModalInscription(activite)" v-if="activite.checkInscription"
-        :disable="isComplet(activite)"
+        :disable="isComplet(activite) || estTropTard(activite.dateDebut)"
         icon="far fa-edit"
         >
-        <q-tooltip anchor="bottom middle" self="top middle" v-if="estIdentifie">
+          <q-tooltip anchor="bottom middle" self="top middle" v-if="estIdentifie && estTropTard(activite.dateDebut)">
+            La date est dépassée, inscription impossible.
+          </q-tooltip>
+        <q-tooltip anchor="bottom middle" self="top middle" v-if="estIdentifie && !estTropTard(activite.dateDebut)">
           Inscription
         </q-tooltip>
-        <q-tooltip v-else anchor="bottom middle" self="top middle">
+        <q-tooltip v-if="!estIdentifie" anchor="bottom middle" self="top middle">
           Connectez-vous pour vous inscrire.
         </q-tooltip>
         </q-btn>
@@ -57,7 +60,7 @@ import {
   QSpinnerGears,
   date
 } from 'quasar'
-import { QUERY_ALL_ACTIVITES_ASC } from '../constants/activitesGraphQL'
+import { QUERY_ALL_ACTIVITES_ASC } from '../graphQL/activitesGraphQL'
 import { GET_ILLU_BY_ID } from '../constants/illustrationsGraphQL'
 import { FIND_USER_BY_ID } from '../constants/userAuth'
 import { AJOUT_INSCRIPTION, LISTE_INSCRIPTION, LES_INSCRIPTIONS, LISTE_INSCRIPTION_CYCLEID, EFFACE_LISTE_INSCRIPTION } from '../constants/inscriptionGraphQL'
@@ -115,75 +118,122 @@ export default {
           this.$q.loading.hide()
         }
       },
-      result (result) {
-        // var affichageActivites = []
+      async result (result) {
+        console.log(result)
         this.affichageActivites = []
         var listeActivites = []
         this.listeActivites = []
         var listeUnique = ''
-        var indice = 0
-        result.data.allActivites.forEach((activite, index) => {
-          if (listeUnique.indexOf(activite.idCycle) < 0) {
-            listeUnique += activite.idCycle
-            listeActivites[activite.idCycle] = [{
-              aId: activite.id,
-              gId: activite.idGoogleEvent,
-              sequence: activite.sequenceEvent,
-              summary: activite.titreActivite,
-              location: activite.lieuActivite,
-              description: activite.description,
-              dateDebut: activite.dateDebut,
-              dateFin: activite.dateFin
-            }]
-            this.$apollo.query({
-              query: LISTE_INSCRIPTION_CYCLEID,
-              fetchPolicy: 'network-only',
-              variables: {
-                cycleId: activite.idCycle
+        // var indice = 0
+        for (let activite of result.data.allActivites) {
+        // result.data.allActivites.forEach(async (activite, index) => {
+          console.log(activite.type)
+          switch (activite.type) {
+            case 'Ateliers':
+              if (listeUnique.indexOf(activite.idCycle) < 0) {
+                listeUnique += activite.idCycle
+                listeActivites[activite.idCycle] = [{
+                  aId: activite.id,
+                  gId: activite.idGoogleEvent,
+                  sequence: activite.sequenceEvent,
+                  summary: activite.titreActivite,
+                  location: activite.lieuActivite,
+                  description: activite.description,
+                  dateDebut: activite.dateDebut,
+                  dateFin: activite.dateFin
+                }]
+                let inscriptions = []
+                await this.$apollo.query({
+                  query: LISTE_INSCRIPTION_CYCLEID,
+                  fetchPolicy: 'network-only',
+                  variables: {
+                    cycleId: activite.idCycle
+                  }
+                }).then((dataCycle) => {
+                  Object.assign(inscriptions, dataCycle.data.allInscriptions)
+                }).catch((error) => {
+                  console.log(error)
+                })
+                let imageIllu = ''
+                await this.$apollo.query({
+                  query: GET_ILLU_BY_ID,
+                  variables: {
+                    id: activite.illustration
+                  }
+                }).then((data) => {
+                  const illustration = data.data.allActivitesIllustrations[0]
+                  if (illustration) {
+                    imageIllu = cl.url(illustration.idImage + '.' + illustration.format, { width: 350, height: 150, crop: 'fill', gravity: 'auto' })
+                  } else {
+                    imageIllu = cl.url('logoLBFmoyen_p1zcu0.png', { width: 350, height: 150, crop: 'fill', gravity: 'auto' })
+                  }
+                }).catch((error) => {
+                  console.log(error)
+                })
+                this.affichageActivites.push(
+                  {
+                    id: activite.id,
+                    idCycle: activite.idCycle,
+                    checkInscription: activite.checkInscription,
+                    publie: activite.publie,
+                    lieu: activite.lieuActivite,
+                    prix: activite.prix,
+                    titre: activite.titreActivite,
+                    description: activite.description,
+                    image: imageIllu,
+                    idGoogleEvent: activite.idGoogleEvent,
+                    sequenceEvent: activite.sequenceEvent,
+                    maxParticipants: activite.maxParticipants,
+                    inscriptions: inscriptions,
+                    type: activite.type,
+                    dateDebut: activite.dateDebut
+                  }
+                )
+              } else {
+                listeActivites[activite.idCycle].push({
+                  aId: activite.id,
+                  gId: activite.idGoogleEvent,
+                  sequence: activite.sequenceEvent,
+                  summary: activite.titreActivite,
+                  location: activite.lieuActivite,
+                  description: activite.description,
+                  dateDebut: activite.dateDebut,
+                  dateFin: activite.dateFin
+                })
               }
-            }).then((dataCycle) => {
-              let inscriptions = []
-              Object.assign(inscriptions, dataCycle.data.allInscriptions)
-              this.$apollo.query({
+              // indice += 1
+              break
+            case 'Infos':
+              console.log('info !', activite)
+              let imageIllu = ''
+              await this.$apollo.query({
                 query: GET_ILLU_BY_ID,
                 variables: {
                   id: activite.illustration
                 }
               }).then((data) => {
                 const illustration = data.data.allActivitesIllustrations[0]
-                this.$set(this.affichageActivites, indice, {
-                  id: activite.id,
-                  idCycle: activite.idCycle,
-                  checkInscription: activite.checkInscription,
-                  publie: activite.publie,
-                  lieu: activite.lieuActivite,
-                  prix: activite.prix,
-                  titre: activite.titreActivite,
-                  description: activite.description,
-                  image: cl.url(illustration.idImage + '.' + illustration.format, { width: 350, height: 150, crop: 'fill', gravity: 'auto' }),
-                  idGoogleEvent: activite.idGoogleEvent,
-                  sequenceEvent: activite.sequenceEvent,
-                  maxParticipants: activite.maxParticipants,
-                  inscriptions: inscriptions
-                })
-                indice += 1
+                if (illustration) {
+                  imageIllu = cl.url(illustration.idImage + '.' + illustration.format, { width: 350, height: 150, crop: 'fill', gravity: 'auto' })
+                } else {
+                  imageIllu = cl.url('logoLBFmoyen_p1zcu0.png', { width: 350, height: 150, crop: 'fill', gravity: 'auto' })
+                }
               }).catch((error) => {
                 console.log(error)
               })
-            })
-          } else {
-            listeActivites[activite.idCycle].push({
-              aId: activite.id,
-              gId: activite.idGoogleEvent,
-              sequence: activite.sequenceEvent,
-              summary: activite.titreActivite,
-              location: activite.lieuActivite,
-              description: activite.description,
-              dateDebut: activite.dateDebut,
-              dateFin: activite.dateFin
-            })
+              this.affichageActivites.push({
+                id: activite.id,
+                publie: activite.publie,
+                titre: activite.titreActivite,
+                description: activite.description,
+                image: imageIllu,
+                type: activite.type,
+                dateDebut: activite.dateDebut
+              })
+              // indice += 1
+              break
           }
-        })
+        }
         Object.assign(this.listeActivites, listeActivites)
       }
     },
@@ -425,6 +475,13 @@ export default {
       this.menuIdentification = false
       this.$eventBus.$emit('logginState')
       // this.$router.push({name: 'accueil'})
+    },
+    estTropTard (dateDebutAtelier) {
+      console.log(dateDebutAtelier)
+      let validite = new Date(dateDebutAtelier).getTime()
+      let todayTS = Date.now()
+      console.log(validite - todayTS)
+      return (validite - todayTS) < 0
     }
   }
 }

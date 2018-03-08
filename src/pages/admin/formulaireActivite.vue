@@ -293,8 +293,8 @@ import {
   QSpinnerGears,
   date
 } from 'quasar'
-import {DEMINER_HTML} from '../../constants/sanitize'
-import {ADD_EVENT, UPDATE_EVENT, DELETE_EVENT} from '../../constants/googleAgendaGraphQL'
+import {DEMINER_HTML} from '../../graphQL/sanitize'
+import {ADD_EVENT, UPDATE_EVENT, DELETE_EVENT} from '../../graphQL/googleAgendaGraphQL'
 import { LISTE_ESPACEBF } from '../../constants/listeEnums'
 import { GET_LISTE_ILLU_FILTRE_ESPACE, ADD_LISTE_ILLU, DELETE_ILLU_GRAPHQL, DELETE_ILLU } from '../../constants/illustrationsGraphQL'
 import { ADD_ACTIVITE, ADD_ACTIVITE_BROUILLON, QUERY_ACTIVITE_BY_IDCYCLE, UPDATE_ACTIVITE, EFFACE_ACTIVITE } from '../../constants/activitesGraphQL-2'

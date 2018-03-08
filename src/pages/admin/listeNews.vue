@@ -10,31 +10,25 @@
         <q-icon name="fa-ellipsis-v" color="amber-8" slot="right" size="20px">
               <q-popover touch-position style="padding: 10px" class="shadow-3">
                 <q-list link dense no-border>
-                  <q-item @click.native="effacerActivite(activite.idCycle, index)" v-close-overlay>
+                  <q-item @click.native="effacerActivite(activite.id, index)" v-close-overlay>
                      <q-item-side icon="fa-trash" />
                      <q-item-main>
                        Effacer
                      </q-item-main>
                    </q-item>
-                   <q-item @click.native="$router.push('dupliquerAtelier/'+activite.idCycle)" v-close-overlay>
-                     <q-item-side icon="fa-copy" />
-                     <q-item-main>
-                       Dupliquer
-                     </q-item-main>
-                   </q-item>
-                   <q-item @click.native="$router.push('modifierAtelier/'+activite.idCycle)" v-close-overlay>
+                   <q-item @click.native="$router.push('modifierNews/'+activite.id)" v-close-overlay>
                      <q-item-side icon="fa-edit" />
                      <q-item-main>
                        Modifier
                      </q-item-main>
                    </q-item>
-                   <q-item v-if="activite.publie" @click.native="togglePublication(activite.idCycle, !activite.publie)" v-close-overlay>
+                   <q-item v-if="activite.publie" @click.native="togglePublication(activite.id, !activite.publie)" v-close-overlay>
                      <q-item-side icon="fa-paste" />
                      <q-item-main>
                        Mode brouillon
                      </q-item-main>
                    </q-item>
-                   <q-item v-else @click.native=" togglePublication(activite.idCycle, !activite.publie)" v-close-overlay>
+                   <q-item v-else @click.native=" togglePublication(activite.id, !activite.publie)" v-close-overlay>
                      <q-item-side icon="fa-paste" />
                      <q-item-main>
                        Publier
@@ -48,7 +42,7 @@
         <vue-markdown :source="activite.description"></vue-markdown>
       </q-card-main>
     </q-card>
-    <h4 class="q-my-sm">Les prochains ateliers</h4>
+    <h4 class="q-my-sm">Les dernières infos</h4>
     <q-card v-for="(activite, index) in activites" inline style="width: 250px; margin-bottom: 5px;margin-right: 20px" :key="activite.id" class="shadow-1">
       <q-card-media>
         <img height="150" width="250" :src="activite.image" />
@@ -58,31 +52,25 @@
         <q-icon name="fa-ellipsis-v" color="amber-8" slot="right" size="20px">
               <q-popover touch-position style="padding: 10px" class="shadow-3">
                 <q-list link dense no-border>
-                  <q-item @click.native="effacerActivite(activite.idCycle, index)" v-close-overlay>
+                  <q-item @click.native="effacerActivite(activite.id, index)" v-close-overlay>
                      <q-item-side icon="fa-trash" />
                      <q-item-main>
                        Effacer
                      </q-item-main>
                    </q-item>
-                   <q-item @click.native="$router.push('dupliquerAtelier/'+activite.idCycle)" v-close-overlay>
-                     <q-item-side icon="fa-copy" />
-                     <q-item-main>
-                       Dupliquer
-                     </q-item-main>
-                   </q-item>
-                   <q-item @click.native="$router.push('modifierAtelier/'+activite.idCycle)" v-close-overlay>
+                   <q-item @click.native="$router.push('modifierNews/'+activite.id)" v-close-overlay>
                      <q-item-side icon="fa-edit" />
                      <q-item-main>
                        Modifier
                      </q-item-main>
                    </q-item>
-                   <q-item v-if="activite.publie" @click.native="togglePublication(activite.idCycle, !activite.publie)" v-close-overlay>
+                   <q-item v-if="activite.publie" @click.native="togglePublication(activite.id, !activite.publie)" v-close-overlay>
                      <q-item-side icon="fa-paste" />
                      <q-item-main>
                        Mode brouillon
                      </q-item-main>
                    </q-item>
-                   <q-item v-else @click.native="togglePublication(activite.idCycle, !activite.publie)" v-close-overlay>
+                   <q-item v-else @click.native="togglePublication(activite.id, !activite.publie)" v-close-overlay>
                      <q-item-side icon="fa-paste" />
                      <q-item-main>
                        Publier
@@ -105,10 +93,10 @@ import {
 } from 'quasar'
 
 // import {EFFACE_CRENEAU, EFFACE_PRIX, UPDATE_ACTIVITE_PUBLIE, UPDATE_CRENEAU_IDGOOGLEEVENT} from '../constants/activitesGraphQL'
-import { EFFACE_ACTIVITE, UPDATE_ACTIVITE_PUBLIE, UPDATE_ACTIVITE_SEQUENCE } from '../../constants/activitesGraphQL-2'
-import {LISTE_ATELIERS} from '../../graphQL/ateliers'
+// import { EFFACE_ACTIVITE, UPDATE_ACTIVITE_PUBLIE, UPDATE_ACTIVITE_SEQUENCE } from '../../constants/activitesGraphQL-2'
+import {LISTE_NEWS, EFFACE_NEWS, UPDATE_NEWS_PUBLIE} from '../../graphQL/news'
 import {GET_ILLU_BY_ID} from '../../constants/illustrationsGraphQL'
-import {DELETE_EVENT, UPDATE_EVENT} from '../../graphQL/googleAgendaGraphQL'
+// import {DELETE_EVENT, UPDATE_EVENT} from '../../graphQL/googleAgendaGraphQL'
 import cloudinary from 'cloudinary-core'
 var cl = new cloudinary.Cloudinary({cloud_name: 'la-bonne-fabrique', secure: true})
 // const today = new Date()
@@ -136,7 +124,7 @@ export default {
   },
   apollo: {
     allActivites: {
-      query: LISTE_ATELIERS,
+      query: LISTE_NEWS,
       fetchPolicy: 'network-only',
       loadingKey: 'loadingActivites',
       watchLoading (isLoading, countModifier) {
@@ -229,83 +217,34 @@ export default {
     }
   },
   methods: {
-    effacerActivite: function (idCycle, index) {
+    effacerActivite: function (idNews, index) {
+      this.menuCarte[index] = false
       this.$q.dialog({
         title: 'Confirmer',
-        message: 'Effacer cette activité ?',
+        message: 'Effacer cette info ?',
         ok: 'Confirmer',
         cancel: 'Annuler'
       }).then(() => {
-        this.processEffacerActivite(idCycle)
+        this.processEffacerActivite(idNews)
       }).catch(() => {
       })
     },
-    processEffacerActivite: function (idCycle) {
-      console.log('le cycle', this.listeActivitesCycle[idCycle])
-      let promises = []
-      this.listeActivitesCycle[idCycle].forEach((activite) => {
-        promises.push(this.effacerEventGCalendar(activite.gId))
-        promises.push(
-          this.$apollo.mutate({
-            mutation: EFFACE_ACTIVITE,
-            variables: {
-              id: activite.aId
-            }
-          })
-        )
-      })
-      Promise.all(promises).then((data) => {
+    processEffacerActivite: function (idNews) {
+      this.$apollo.mutate({
+        mutation: EFFACE_NEWS,
+        variables: {
+          id: idNews
+        }
+      }).then((result) => {
         this.$apollo.queries.allActivites.refetch()
         this.$q.notify({
           type: 'positive',
           timeout: 2500,
-          message: 'L\'atelier a été effacé avec succès.'
+          message: 'L\'info a été effacé avec succès.'
         })
       })
     },
-    effacerEventGCalendar: function (idEventGCalendar) {
-      this.$q.loading.show({
-        spinner: QSpinnerGears,
-        message: 'Mise à jour du calendrier Google',
-        messageColor: 'white',
-        spinnerSize: 150, // in pixels
-        spinnerColor: 'white',
-        customClass: 'bg-test'
-      })
-      return this.$apollo.query({
-        query: DELETE_EVENT,
-        variables: {
-          eventId: idEventGCalendar
-        }
-      }).then((data) => {
-        this.$q.loading.hide()
-      }).catch((error) => {
-        console.log('erreur: %s', error)
-      })
-    },
-    ajouterEventGCalendar: function (activite, status) {
-      const newSequence = activite.sequence + 1
-      const eventDataGoogle = {
-        summary: activite.summary,
-        location: activite.location,
-        description: activite.description,
-        start: {dateTime: activite.dateDebut},
-        end: {dateTime: activite.dateFin},
-        status: status,
-        sequence: newSequence
-      }
-      return this.$apollo.query({
-        query: UPDATE_EVENT,
-        variables: {
-          eventId: activite.gId,
-          dataEvent: eventDataGoogle
-        }
-      }).then((data) => {
-      }).catch((error) => {
-        console.log('erreur', error)
-      })
-    },
-    togglePublication: function (idCycle, newPublication) {
+    togglePublication: function (idNews, newPublication) {
       console.log(newPublication)
       var message = ''
       if (newPublication) {
@@ -321,30 +260,13 @@ export default {
         spinnerColor: 'white',
         customClass: 'bg-test'
       })
-      let promises = []
-      this.listeActivitesCycle[idCycle].forEach((item) => {
-        promises.push(
-          this.$apollo.mutate({
-            mutation: UPDATE_ACTIVITE_PUBLIE,
-            variables: {
-              id: item.aId,
-              publie: newPublication
-            }
-          }).catch((error) => {
-            this.$q.loading.hide()
-            console.log(error)
-          })
-        )
-        console.log('update google')
-        if (newPublication) {
-          promises.push(this.ajouterEventGCalendar(item, 'confirmed'))
-        } else {
-          promises.push(this.ajouterEventGCalendar(item, 'cancelled'))
+      this.$apollo.mutate({
+        mutation: UPDATE_NEWS_PUBLIE,
+        variables: {
+          id: idNews,
+          publie: newPublication
         }
-        console.log('update sequence')
-        promises.push(this.updateSequence(item.aId, item.sequence))
-      })
-      Promise.all(promises).then((data) => {
+      }).then((result) => {
         this.$q.loading.hide()
         this.$apollo.queries.allActivites.refetch()
         this.$q.notify({
@@ -353,17 +275,8 @@ export default {
           message: 'La publication a été modifiée avec succès.'
         })
       }).catch((error) => {
+        this.$q.loading.hide()
         console.log(error)
-      })
-    },
-    updateSequence: function (aId, sequence) {
-      const newSequence = sequence + 1
-      return this.$apollo.mutate({
-        mutation: UPDATE_ACTIVITE_SEQUENCE,
-        variables: {
-          id: aId,
-          sequenceEvent: newSequence
-        }
       })
     }
   }

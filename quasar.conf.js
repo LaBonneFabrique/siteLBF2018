@@ -90,7 +90,9 @@ module.exports = function (ctx) {
         'QRadio',
         'QSelect',
         'QRouteTab',
-        'QEditor'
+        'QEditor',
+        'QAutocomplete',
+        'QBtnDropdown'
       ],
       directives: [
         'Ripple'
