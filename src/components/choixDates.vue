@@ -6,12 +6,12 @@
     icon="fa-calendar"
     label="Choisir la ou les dates"
     />
-    <q-datetime-picker color="amber" v-model="datePickup" monday-first type="date" :month-names="moisFR" :day-names="joursFR" @change="addDate" :min="aujourdhui"/>
+    <q-datetime-picker color="secondary" v-model="datePickup" type="date" @input="val => { addDate(val) }" :min="aujourdhui" :first-day-of-week="1"/>
     <br />
     <q-btn v-if="afficheBtn" color="amber" flat @click="forceAjout()">Ajouter cette sélection</q-btn>
       <div class="group">
-      <q-chip v-for="(date, index) in listeDates" :key="toTimeStamp(date)" closable color="primary" @close="removeDate(index)">
-        {{toDateReadable(date)}}
+      <q-chip v-for="(creneau, index) in listeDates" :key="toTimeStamp(creneau.date)" closable square color="primary" @hide="removeDateBis(index)">
+        {{toDateReadable(creneau.date)}}
       </q-chip>
       </div>
       <div class="row justify-center" style="margin-top: 10px">
@@ -36,7 +36,7 @@ export default {
       datePickup: today,
       joursFR: DAYNAMES,
       moisFR: MONTHNAMES,
-      listeDates: this.propDates,
+      listeDates: [],
       aujourdhui: today,
       lastDatePickup: today,
       afficheBtn: false,
@@ -45,23 +45,29 @@ export default {
   },
   mounted: function () {
     this.listeDates = this.propDates
+    console.log('els dates', this.propDates)
   },
   methods: {
+    removeDateBis (index) {
+      this.$emit('remove', index)
+    },
     removeDate: function (index) {
       this.listeDates.splice(index, 1)
       this.$emit('listeDates', this.listeDates)
     },
-    addDate: function () {
+    addDate: function (selectedDate) {
       let unit = 'months'
       let diff = date.getDateDiff(this.datePickup, this.lastDatePickup, unit)
       this.lastDatePickup = this.datePickup
       if (diff !== 1 && diff !== -1) {
-        this.listeDates.push(this.datePickup)
+        this.listeDates.push({date: this.datePickup})
+        this.listeDates.sort(function (a, b) { return new Date(a.date).getTime() - new Date(b.date).getTime() })
         this.$emit('listeDates', this.listeDates)
         this.afficheBtn = false
       } else {
         this.afficheBtn = true
       }
+      console.log(this.listeDates)
     },
     toTimeStamp: function (dateToTransform) {
       return date.formatDate(dateToTransform, 'X').toString() + Math.random().toString(2)

@@ -1,69 +1,53 @@
 <template>
   <q-page>
-    <q-card v-if="affichageActivites.length > 0" v-for="(activite, index) in affichageActivites" class="cadreNew no-shadow" :key="activite.id"  :style="{'display': 'inline-block', 'background-color': tableCouleurLBF[activite.section]}">
-      <div class="cadreDates" :style="{'background-color': tableCouleurLBF[activite.section]}"></div>
-            <div class="jourNew">
-        {{horaireLisible(activite.dateDebut, activite.dateFin).jourNum}} <span>{{horaireLisible(activite.dateDebut, activite.dateFin).mois}}</span>
-      </div>
-      <div v-if="activite.dates.length > 1" class="separation"></div>
-      <div v-if="activite.dates.length > 1" class="moisPlus">{{moisPlus(activite.dates)}}</div>
-
+    <q-card inline v-if="affichageActivites.length > 0" v-for="(activite, index) in affichageActivites" class="cadre no-shadow" :key="activite.id">
+      <!-- <div class="entete" :style="{'background-image': 'url('+urlImage(activite.image,300,220,1,'blur')+')'}"></div> -->
       <lazy-background
-        :image-source="urlImage(activite.image,280,180,100,'', 'crop')"
-        :loading-image="urlImage(activite.image,280,180,1,'blur', 'crop')"
+        :image-source="urlImage(activite.image,300,220,100,'')"
+        :loading-image="urlImage(activite.image,300,220,1,'blur')"
         error-image="/img/error.png"
-        imageClass="imageEntete">
+        imageClass="entete">
       </lazy-background>
-      <div class="placesRestantes" v-if="activite.checkInscription && nbPlacesRestantes(index) > 1" :style="{'background-color': tableCouleurLBF[activite.section]}">
-      {{nbPlacesRestantes(index)}} places restantes
-      </div>
-      <div class="placesRestantes" v-else-if="activite.checkInscription && nbPlacesRestantes(index) > 0" :style="{'background-color': tableCouleurLBF[activite.section]}">
-      Dernière place
-      </div>
-      <div class="placesRestantes" v-else :style="{'background-color': tableCouleurLBF[activite.section]}">
-      Complet
-      </div>
-      <div class="inscription" v-if="activite.checkInscription" :style="{'background-color': tableCouleurLBF[activite.section]}" @click="creationModalInscription(activite)" :disable="isComplet(activite) || estTropTard(activite.dateDebut)">
-        <!--<q-btn label="Inscriptions" icon="fas fa-edit" dense flat no-caps size="md" class="btnInscriptions"
+      <div class="typeCadre"></div>
+      <img
+        :src="afficheIcon(activite.section)"
+        class="typeIcon"
+      >
+      <div class="type">{{ afficheType(activite.type) }}</div>
+          <div class="cadreFond"></div>
+          <div class="jour" :style="{'color': tableCouleurLBF[activite.section]}">{{horaireLisible(activite.dateDebut, activite.dateFin).jour}}</div>
+          <div class="numJour" :style="{'color': tableCouleurLBF[activite.section]}">{{horaireLisible(activite.dateDebut, activite.dateFin).jourNum}}</div>
+          <div class="mois" :style="{'color': tableCouleurLBF[activite.section]}">{{horaireLisible(activite.dateDebut, activite.dateFin).mois}}</div>
+        <div class="titre"><span>{{activite.titre}}</span></div>
+        <div class="description">
+          {{parseMarkdown(activite.description)}}
+          </div>
+        <div v-if="activite.type === 'Ateliers'" class="cadreActions">
+        <q-icon name="far fa-clock" class="horaireIcon"/>
+        <div class="horaire">{{horaireLisible(activite.dateDebut, activite.dateFin).horaire}}</div>
+        <q-icon name="fas fa-users" class="placesIcon" />
+        <div class="places">{{nbPlacesRestantes(index)}}</div>
+        <q-icon name="fas fa-euro-sign" class="prixIcon" />
+        <div class="prix">
+          <p v-for="prix in activite.prix" :key="activite.id.concat(prix.description)" class="no-margin no-padding">
+           <span v-if="prix.qf">{{calculPrix(prix.prix,qf)}} € - {{prix.description}}</span>
+           <span v-else>{{prix.prix}} € - {{prix.description}}</span>
+          </p>
+        </div>
+          <q-btn class="inscription" label="Inscriptions" icon="fas fa-edit" dense outline no-caps
+          v-if="activite.checkInscription"
           :disable="isComplet(activite) || estTropTard(activite.dateDebut)"
           @click="creationModalInscription(activite)"
+          :style="{'color': tableCouleurLBF[activite.section]}"
             >
-          <q-tooltip anchor="bottom middle" self="top middle" v-if="estIdentifie && estTropTard(activite.dateDebut)">
+            <q-tooltip anchor="bottom middle" self="top middle" v-if="estIdentifie && estTropTard(activite.dateDebut)">
             La date limite d'inscription est dépassée.
           </q-tooltip>
         <q-tooltip v-if="!estIdentifie" anchor="bottom middle" self="top middle">
           Connectez-vous pour vous inscrire.
         </q-tooltip>
-        </q-btn> -->
-        <q-icon name="fas fa-edit" size="12px" style="margin-right: 3px"></q-icon>Inscriptions
-        <q-tooltip anchor="bottom middle" self="top middle" v-if="estTropTard(activite.dateDebut)">
-            La date limite d'inscription est dépassée.
-          </q-tooltip>
-        <q-tooltip anchor="bottom middle" self="top middle" v-else-if="isComplet(activite)">
-            L'atelier est complet
-          </q-tooltip>
-      </div>
-
-      <div class="cadreInfo" >
-        <div class="titreNew"><h1>{{activite.titre}}</h1></div>
-        <div v-html="parseMarkdown(activite.description)" :class="['text-justify','cadreTexte-'+activite.type]"></div>
-      </div>
-
-      <q-icon name="far fa-clock" class="horaireIconNew" v-if="afficheType(activite.type) == 'Atelier'" size="25px"></q-icon>
-      <div class="horaireNew" v-if="afficheType(activite.type) == 'Atelier'">{{traitementHoraire(activite.dates[0].horaire)}}</div>
-      <q-icon name="fas fa-users" class="placesIconNew" v-if="afficheType(activite.type) == 'Atelier'" size="25px"/>
-      <div class="placesNew" v-if="afficheType(activite.type) == 'Atelier'">{{activite.maxParticipants}} places</div>
-      <q-icon name="fas fa-euro-sign" class="prixIconNew" v-if="afficheType(activite.type) == 'Atelier'" size="25px"/>
-      <div class="prixNew" v-if="afficheType(activite.type) == 'Atelier'">
-        <p v-for="prix in activite.prix" :key="activite.id.concat(prix.description)" class="no-margin no-padding" v-if="afficheType(activite.type) == 'Atelier'">
-         <span v-if="prix.qf">{{calculPrix(prix.prix,qf)}} € - {{prix.description}}</span>
-         <span v-else>{{prix.prix}} € - {{prix.description}}</span>
-        </p>
-      </div>
-
-      <!-- <div :class="['colonneInfos-'+activite.type]" :style="{'background-color': tableCouleurLBF[activite.section]}">
-        <div class="nbPlaces" v-if="activite.checkInscription">{{nbPlacesRestantes(index)}} places restantes</div>
-      </div> -->
+</q-btn>
+        </div>
     </q-card>
     <q-card inline v-if="affichageActivites.length === 0" class="cadre no-shadow">
       <div class="entete" :style="{'background-image': 'url(https://res.cloudinary.com/la-bonne-fabrique/image/upload/c_fill,g_center,h_220,w_300/v1523014644/logoLBFSeul_a1t4af.png)'}"></div>
@@ -100,25 +84,25 @@ import {
 } from 'quasar'
 import { QUERY_ALL_ACTIVITES_ASC } from '../graphQL/activitesGraphQL'
 import { tableCouleurLBF, iconeLBF } from '../constants/constanteLBF'
+// import { GET_ILLU_BY_ID } from '../constants/illustrationsGraphQL'
 import { FIND_USER_BY_ID } from '../graphQL/userAuth'
 import { AJOUT_INSCRIPTION, LISTE_INSCRIPTION, LES_INSCRIPTIONS, LISTE_INSCRIPTION_BY_ATELIER, EFFACE_LISTE_INSCRIPTION, CONNECT_ACTIVITE_INSCRIPTION } from '../graphQL/inscriptionGraphQL'
 import { authMixins } from '../utils/auth'
 import { qfMixins } from '../utils/qf'
 import { genURLImageMixins } from '../utils/genURLImage'
-import { parseMarkdownMixins } from '../utils/parseMarkdown.js'
-import { traitementDateMixins } from '../utils/traitementDate'
+// import cloudinary from 'cloudinary-core'
+// var cl = new cloudinary.Cloudinary({cloud_name: 'la-bonne-fabrique', secure: true})
 
 import marked from 'marked'
 import lazyBackground from '../components/VueLazyBackgroundImage'
 
 export default {
-  mixins: [authMixins, qfMixins, genURLImageMixins, parseMarkdownMixins, traitementDateMixins],
+  mixins: [authMixins, qfMixins, genURLImageMixins],
   components: {
     lazyBackground
   },
   data () {
     return {
-      test: '<p>Description de l&#39;atelier ou de l&#39;évènement</p>',
       affichageActivites: [],
       affichageActivitesReference: [],
       modalInscription: false,
@@ -192,43 +176,14 @@ export default {
         }
       },
       async result (result) {
-        this.listeAteliers = []
-        // this.listeInfosPA = []
-        // var listeActivites = []
-        // this.listeActivites = []
+        this.affichageActivites = []
+        var listeActivites = []
+        this.listeActivites = []
+        var listeUnique = ''
         for (let activite of result.data.allActivites) {
           switch (activite.type) {
             case 'Ateliers':
-              let inscriptions = []
-              await this.$apollo.query({
-                query: LISTE_INSCRIPTION_BY_ATELIER,
-                fetchPolicy: 'network-only',
-                variables: {
-                  atelierId: activite.id
-                }
-              }).then((dataCycle) => {
-                Object.assign(inscriptions, dataCycle.data.allInscriptions)
-              }).catch((error) => {
-                console.log(error)
-              })
-              this.affichageActivites.push(
-                {
-                  id: activite.id,
-                  checkInscription: activite.checkInscription,
-                  publie: activite.publie,
-                  section: activite.section,
-                  lieu: activite.lieuActivite,
-                  prix: activite.prix,
-                  titre: activite.titreActivite,
-                  description: activite.description,
-                  image: activite.illustration,
-                  maxParticipants: activite.maxParticipants,
-                  inscriptions: inscriptions,
-                  type: activite.type,
-                  dateDebut: activite.dateDebut,
-                  dates: activite.dates
-                })
-              /* if (listeUnique.indexOf(activite.idCycle) < 0) {
+              if (listeUnique.indexOf(activite.idCycle) < 0) {
                 listeUnique += activite.idCycle
                 listeActivites[activite.idCycle] = [{
                   aId: activite.id,
@@ -252,6 +207,8 @@ export default {
                 }).catch((error) => {
                   console.log(error)
                 })
+                // let imageIllu = ''
+                // imageIllu = cl.url(activite.illustration, { width: 300, height: 220, fetchFormat: 'auto', crop: 'lfill', gravity: 'face' })
                 this.affichageActivites.push(
                   {
                     id: activite.id,
@@ -273,7 +230,6 @@ export default {
                     dateFin: activite.dateFin
                   }
                 )
-                console.log(this.parseMarkdown(activite.description))
               } else {
                 listeActivites[activite.idCycle].push({
                   aId: activite.id,
@@ -285,7 +241,7 @@ export default {
                   dateDebut: activite.dateDebut,
                   dateFin: activite.dateFin
                 })
-              } */
+              }
               // indice += 1
               break
             case 'Infos':
@@ -306,8 +262,7 @@ export default {
           }
         }
         Object.assign(this.affichageActivitesReference, this.affichageActivites)
-        console.log('activités', this.affichageActivites)
-        // Object.assign(this.listeActivites, listeActivites)
+        Object.assign(this.listeActivites, listeActivites)
       }
     },
     userData: {
@@ -348,16 +303,6 @@ export default {
     }
   },
   methods: {
-    moisPlus (lesDates) {
-      const n = lesDates.length - 1
-      let retour = ''
-      lesDates.forEach((laDate, index) => {
-        if (index > 0) retour += this.horaireLisible(laDate.date, laDate.date).jourNum + ' ' + this.horaireLisible(laDate.date, laDate.date).mois
-        if ((index > 0) && (index < n)) retour += ' - '
-      })
-      console.log(retour)
-      return retour
-    },
     filtreType () {
       const lesFiltres = this.listeFiltreTypes
       console.log(this.listeFiltreTypes)
@@ -433,30 +378,34 @@ export default {
       return retour
     },
     horaireLisible: function (debut, fin) {
+      /* let dateActivite = date.formatDate(debut, 'dddd D MMMM', {
+        monthNames: ['janvier', 'février', 'mars', 'avril', 'mai', 'juin', 'juillet', 'août', 'septembre', 'octobre', 'novembre', 'décembre'],
+        dayNames: ['dimanche', 'lundi', 'mardi', 'mercredi', 'jeudi', 'vendredi', 'samedi']
+      }) */
       let jour = date.formatDate(debut, 'dddd')
       let jourNum = date.formatDate(debut, 'D')
       let mois = date.formatDate(debut, 'MMMM')
       switch (mois) {
         case 'Janvier':
-          mois = 'janv'
+          mois = 'Janv'
           break
         case 'Février':
-          mois = 'févr.'
+          mois = 'Févr.'
           break
         case 'Juillet':
-          mois = 'juil.'
+          mois = 'Juil.'
           break
         case 'Septembre':
-          mois = 'sept.'
+          mois = 'Sept.'
           break
         case 'Octobre':
-          mois = 'oct.'
+          mois = 'Oct.'
           break
         case 'Novembre':
-          mois = 'nov.'
+          mois = 'Nov.'
           break
         case 'Décembre':
-          mois = 'déc.'
+          mois = 'Déc.'
           break
       }
       let heureDebut = date.formatDate(debut, 'HH')
@@ -657,306 +606,234 @@ export default {
 
 $fond = #FFFFFF // #F7FAFA
 
-.sectionNew
-  position: absolute
-  width: 35px
-  height: 35px
-  left: 133px
-  top: 102px
-  z-index: 2
-
-.moisNew
-  position: absolute
-  width: 55px
-  height: 32px
-  left: 95px
-  top: 141px
-  font-family: Roboto
-  font-style: normal
-  font-weight: 900
-  line-height: normal
-  font-size: 24px
-  color: #FFFFFF
-  text-align: left
-  z-index: 3
-
-.typeNew
-  position: absolute
-  width: 46px
-  height: 15px
-  left: 65px
-  top: 102px
-  font-family: Roboto
-  font-style: normal
-  font-weight: 900
-  line-height: normal
-  font-size: 14px
-  text-transform: capitalize
-  color: #FFFFFF
-  z-index: 3
-
-.colonneInfos-Ateliers
-  position: relative
-  float: left
-  width: 160px
-  min-height: 300px
-  margin-left: 11px
-  margin-top: 100px
-  border-radius: 5px 5px 5px 5px
-  z-index: 2
-
-.colonneInfos-PetitesAnnonces
-.colonneInfos-Infos
-  position: relative
-  float: left
-  width: 160px
-  height: 82px
-  margin-left: 11px
-  margin-top: 100px
-  border-radius: 5px
-  z-index: 2
-
-.cadreTexte-PetitesAnnonces
-.cadreTexte-Infos
-  position: relative
-  width: 465px
-  margin: 0px
-  margin-left: -160px
-  font-family: Roboto
-  font-style: normal
-  font-weight: normal
-  line-height: normal
-  font-size: 14px
-  text-align: justify
-  background-color: #FFFFFF
-
 .bg-test
   background-color: rgba(75, 188, 196, 0.5)
 
-.nbPlaces
+.cadre
   position: relative
-  width: 140px
-  margin-left: 10px
-  height: 22px
-  margin-top: 240px
-  font-family: Roboto
-  font-style: normal
-  font-weight: normal
-  line-height: normal
-  font-size: 14px
-  text-align: center
-  color: #FFFFFF
+  width: 300px
+  background: $fond
+  margin-left: 20px
+  margin-bottom: 40px
+  border: 1px solid $grey-3
 
-.imageEntete
+.entete
   position: absolute
-  width: 280px
-  height: 180px
+  width: 298px
+  height: 220px
   left: 0px
   top: 0px
 
-.cadreNew
-  position: relative
-  display: block
-  width: 280px !important
-  min-height: 510px
-  margin: 0px
-  margin-right: 2px
-  margin-bottom: 2px
+.sectionIcon
+  position: absolute
+  left: 2.33%
+  right: 83.33%
+  top: 47.59%
+  bottom: 44.86%
+  font-size: 36px
+  color: #C76B00
 
-.cadreInfo
-  position: relative
-  width: 280px
-  margin: 0px
-  margin-left: 0px
-  margin-top: 180px
-  min-height: 220px
-  margin-bottom: 120px
-  background-color: rgba(251, 251, 251, 1)
+.barreTitre
+  margin-top: 7px
+  width: 286px
+  margin-left: 7px
 
-.titreNew
-  display: table
-  position: relative
-  width: 270px
-  height: 55px
-  margin-left: 5px
-  margin-top: 13px
-.titreNew h1
-  display: table-cell
-  vertical-align: middle
+.titre
+  position: absolute
+  width: 221px
+  height: 41px
+  left: 72px
+  top: 220px
   font-family: Roboto
   font-style: normal
   font-weight: 900
   line-height: normal
-  font-size: 24px
+  font-size: 18px
   text-transform: capitalize
   color: #000000
+  display: table
+.titre span
+  display: table-cell
+  vertical-align: middle
 
-.cadreTexte-Ateliers
-  position: relative
-  width: 270px
-  margin-top: 7px
-  margin-bottom: 10px
-  margin: 0px
-  margin-left: 5px
+.cadreFond
+  position: absolute
+  width: 64px
+  height: 86px
+  left: 5px
+  top: 182px
+  background: $fond
+  border-radius: 4px
+
+.jour
+  position: absolute;
+  width: 57px
+  height: 17px
+  left: 8px
+  top: 184px
   font-family: Roboto
   font-style: normal
-  font-weight: normal
+  font-weight: 900
   line-height: normal
   font-size: 14px
-  text-align: justify
+  text-align: center
+  text-transform: capitalize
 
-.cadreDates
+.numJour
   position: absolute
-  width: 135px
-  height: 63px
-  left: 145px
-  top: 0px
-  z-index: 3
-
-.jourNew
-  position: absolute
-  width: 128px
-  height: 43px
-  left: 150px
-  top: 0px
+  width: 43px
+  height: 38px
+  left: 15px
+  top: 197px
   font-family: Roboto
   font-style: normal
   font-weight: 900
   line-height: normal
   font-size: 36px
-  color: #FFFFFF
-  z-index: 3
-.jourNew span
-  font-size: 24px
+  text-transform: capitalize
+  text-align: center
+  color: #C76B00
 
-.separation
-  position: absolute
-  width: 130px
-  height: 3px
-  left: 150px
-  top: 39px
-  background: rgba(255, 255, 255, 0.6)
-  border-radius: 1px
-  z-index: 3
-
-.moisPlus
-  position: absolute
-  width: 128px
-  height: 17px
-  left: 150px
-  top: 42px
+.mois
+  position: absolute;
+  width: 58px
+  height: 29px
+  left: 7px
+  top: 235px
   font-family: Roboto
   font-style: normal
   font-weight: 900
   line-height: normal
-  font-size: 14px
-  text-align: right
-  color: rgba(255, 255, 255, 0.6)
-  z-index: 3
+  font-size: 24px
+  text-transform: capitalize
+  text-align: center
+  color: #C76B00
 
-.horaireIconNew
-  position: absolute
-  width: 25px
-  height: 25px
-  left: 59px
-  top: calc(100% \- 113px)
-  z-index: 3
-  color: #FFFFFF
-
-.horaireNew
-  position: absolute
-  width: 135px
-  height: 17px
-  left: 0px
-  top: calc(100% \- 86px)
+.description
+  position: relative
+  width: 286px
+  margin-left: 7px
+  margin-top: 266px
   font-family: Roboto
   font-style: normal
   font-weight: normal
   line-height: normal
-  font-size: 14px
-  text-align: center
-  color: #FFFFFF
+  font-size: 16px
+  text-align: justify
+  color: #000000
 
-.placesIconNew
-  position: absolute
-  width: 28px
-  height: 26px
-  left: 56px
-  top: calc(100% \- 60px)
-  z-index: 3
-  color: #FFFFFF
+.typeCadre
+  position: absolute;
+  width: 50px
+  height: 60px
+  left: 243px
+  top: 7px
+  background: $fond
+  border-radius: 4px
 
-.placesNew
+.type
+  position: absolute;
+  width: 46px;
+  height: 15px;
+  left: 245px;
+  top: 51px;
+  font-family: Roboto;
+  font-style: normal;
+  font-weight: 900;
+  line-height: normal;
+  font-size: 14px;
+  text-align: center;
+  text-transform: capitalize;
+  color: $grisLBF;
+
+.typeIcon
+  position: absolute;
+  width: 40px;
+  height: 40px;
+  left: 248px;
+  top: 8px;
+
+.cadreActions
+  position: relative
+  width: 286px
+  height: 80px
+  margin-left: 7px
+
+.horaireIcon
   position: absolute
-  width: 140px
-  height: 15px
-  left: 0px
-  top: calc(100% \- 35px)
+  width: 17px
+  height: 18px
+  left: 1px
+  top: 1px
+  font-size: 18px
+  color: $grisBF
+
+.horaire
+  position: absolute;
+  width: 85px;
+  height: 15px;
+  left: 27px;
+  top: 2px;
+  font-family: Roboto;
+  font-style: normal;
+  font-weight: normal;
+  line-height: normal;
+  font-size: 14px;
+  color: $grisBF;
+
+.placesIcon
+  position: absolute;
+  width: 19px;
+  height: 19px;
+  left: 0px;
+  top: 23px;
+  line-height: normal;
+  font-size: 18px;
+  color: $grisBF;
+
+.places
+  position: absolute;
+  width: 82px;
+  height: 15px;
+  left: 27px;
+  top: 26px;
+  font-family: Roboto;
+  font-style: normal;
+  font-weight: normal;
+  line-height: normal;
+  font-size: 14px;
+  color: $grisBF;
+
+.prixIcon
+  position: absolute;
+  width: 12px;
+  height: 17px;
+  left: 130px;
+  top: 0px;
+  font-size: 18px;
+  text-transform: capitalize;
+  font-variant: small-caps;
+  color: $grisBF;
+
+.prix
+  position: absolute;
+  width: 132px
+  height: 63px
+  left: 153px
+  top: -2px
   font-family: Roboto
   font-style: normal
   font-weight: normal
-  line-height: normal
   font-size: 14px
-  text-align: center
-  color: #FFFFFF
-
-.prixIconNew
-  position: absolute
-  width: 15px
-  height: 22px
-  left: 202px
-  top: calc(100% \- 113px)
-  z-index: 3
-  color: #FFFFFF
-
-.prixNew
-  position: absolute
-  width: 140px
-  height: 71px
-  left: 140px
-  top: calc(100% \- 86px)
-  z-index: 3
-  font-family: Roboto
-  font-style: normal
-  font-weight: normal
-  line-height: normal
-  text-align: center
-  font-size: 14px
-  color: #FFFFFF
+  line-height: 24px
+  color: $grisBF
 
 .inscription
   position: absolute
-  width: 100px
-  height: 20px
-  left: 180px
-  top: 169px
-  font-family: Roboto
-  font-style: normal
-  font-weight: normal
-  line-height: normal
-  font-size: 14px
-  text-align: center
-  color: #FFFFFF
-  z-index: 3
-.inscription:hover
-  cursor: pointer
-.inscription[disabled]
-  opacity: 0.8 !important
+  width: 115px
+  height: 22px
+  left: 0px
+  top: 46px
+  color: #969696
 
-.placesRestantes
-  position: absolute
-  width: 128px
-  height: 20px
-  left: 50px
-  top: 169px
-  padding-top: 1px
-  border-radius: 5px 0px 0px 5px
-  color: #FFFFFF
-  font-family: Roboto
-  font-style: normal
-  font-weight: normal
-  line-height: normal
-  font-size: 14px
-  text-align: center
-  z-index: 4
 </style>

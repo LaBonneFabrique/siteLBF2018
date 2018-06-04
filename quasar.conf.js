@@ -4,7 +4,8 @@ module.exports = function (ctx) {
   return {
     plugins: [
       'apollo',
-      'eventBus'
+      'eventBus',
+      'head'
     ],
     css: [
       'app.styl'
@@ -24,8 +25,8 @@ module.exports = function (ctx) {
     build: {
       scopeHoisting: true,
       vueRouterMode: 'history',
-      // gzip: true,
-      // analyze: true,
+      gzip: true,
+      analyze: {analyzerMode: 'server', analyzerHost: '0.0.0.0', analyzerPort: '8080' },
       // extractCSS: false,
       // useNotifier: false,
       extendWebpack (cfg) {
@@ -50,6 +51,7 @@ module.exports = function (ctx) {
       i18n: 'fr',
       iconSet: 'fontawesome',
       components: [
+        'QDatetimePicker',
         'QLayout',
         'QLayoutHeader',
         'QLayoutDrawer',

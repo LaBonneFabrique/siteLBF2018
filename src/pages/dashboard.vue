@@ -1,8 +1,5 @@
 <template>
-  <q-tabs inverted no-pane-border>
-      <q-tab default slot="title" name="general" label="général"/>
-      <q-tab v-for="m in profileData.profil" :label="m.prenom" :name="m.prenom" slot="title" :key = "m.id" />
-  <q-tab-pane name="general" style="margin-top: 0px">
+  <q-page>
     <q-card inline class="carte">
       <q-card-title>
         <q-icon name="fas fa-address-card" style="margin-right: 10px"/>
@@ -14,9 +11,15 @@
           label="Quotient familial"
           :labelWidth="8"
           class="col-8">
-          <q-input type="number" v-model="profileData.qf" @blur="majUser('qf')"/>
+          <q-input @keydown="keyDown($event, 'qf')" type="number" v-model="profileData.qf"/>
         </q-field>
-        <q-icon name="fas fa-question-circle" class="col-3 offset-1 justify-start" size="24px">
+
+        <q-btn class="col-2 offset-1" icon="far fa-save" @click="majUser('qf')" dense flat inverted size="20px">
+          <q-tooltip anchor="bottom middle" self="top middle">
+            Enregistrer
+          </q-tooltip>
+        </q-btn>
+        <q-icon name="fas fa-question-circle" size="24px" class="col-1">
                   <q-tooltip anchor="bottom middle" self="top middle">
         <q-list dense no-border>
         <q-item>
@@ -29,7 +32,7 @@
         <q-item>901 &lt; QF &lt; 1200 : -20%</q-item>
         <q-item>1201 &lt; QF &lt; 1500 : -10%</q-item>
         <q-item>
-          QF &gt; 1501 : plein tarif
+          QF &gt;= 1501 : plein tarif
         </q-item>
         </q-list>
         </q-tooltip>
@@ -76,8 +79,8 @@
           <q-list no-border>
             <q-item dense style="padding: 0px" v-for="(m, index) in profileData.profil" :key="m.id">
               <q-item-side class="bouton"><q-btn icon="fas fa-edit" flat inverted size="md" dense @click="majMembre(index)"/><q-btn v-if="index > 0" icon="fa-trash" flat inverted size="md" dense @click="effacerMembre(m.id)"/></q-item-side>
-              <q-item-main>{{m.prenom}}</q-item-main>
-              <q-item-side>{{age(m.dateNaissance)}}</q-item-side>
+              <q-item-main :label="m.prenom" :sublabel="age(m.dateNaissance)"></q-item-main>
+              <q-item-side><img :src="avatar(m.id)" width="40" style="margin-right: 5px"/></q-item-side>
             </q-item>
           </q-list>
         </q-card-main>
@@ -106,7 +109,7 @@
             <q-card inline class="carte">
       <q-card-title>
         <q-icon name="fa-exclamation" style="margin-right: 10px"/>
-          Zone de danger
+          Prudence
       </q-card-title>
 
         <q-card-main class="corps">
@@ -118,22 +121,7 @@
         Effacer le compte</q-btn>
     </q-card-actions>
     </q-card>
-
-  </q-tab-pane>
-  <q-tab-pane v-for="m in profileData.profil" :name="m.prenom" :key = "m.id">
-    <img :src="avatar(m.id)" width="150px" class="shadow-2"/>
-    <q-card inline style="width: 400px">
-      <q-card-title>
-        Badges <q-btn flat inverted ><q-icon name="fa-question-circle-o" size="24px" /></q-btn>
-      </q-card-title>
-    </q-card>
-    <q-card inline style="width: 400px">
-      <q-card-title>
-        Ateliers
-      </q-card-title>
-    </q-card>
-  </q-tab-pane>
-  </q-tabs>
+  </q-page>
 </template>
 
 <script>
@@ -145,7 +133,7 @@ import {
 import { authMixins } from '../utils/auth.js'
 import { validationMixin } from 'vuelidate'
 import { required, sameAs, minLength, email } from 'vuelidate/lib/validators'
-import { FIND_USER_BY_ID, ADD_MEMBRE, CONNECT_MEMBRE, EFFACE_MEMBRE, MAJ_MEMBRE, MAJ_USER_QF, EFFACER_USER, CHECK_MDP, UPDATE_MDP } from '../constants/userAuth'
+import { FIND_USER_BY_ID, ADD_MEMBRE, CONNECT_MEMBRE, EFFACE_MEMBRE, MAJ_MEMBRE, MAJ_USER_QF, EFFACER_USER, CHECK_MDP, UPDATE_MDP } from '../graphQL/userAuth'
 
 const isValideDate = value => {
   if (typeof value === 'undefined' || value === null || value === '') {
@@ -181,6 +169,13 @@ export default {
       ancienMDP: '',
       newPassword: '',
       repeatNewPassword: ''
+    }
+  },
+  head: {
+    title: {
+      inner: 'La Bonne Fabrique',
+      separator: '-',
+      complement: 'Tableau de bord'
     }
   },
   validations: {
@@ -347,6 +342,11 @@ export default {
             }
           }).then((data) => {
             this.$q.loading.hide()
+            this.$q.notify({
+              message: 'Modification de votre quotient enregistrée.',
+              timeout: 2500,
+              type: 'positive'
+            })
           })
         }
       }
@@ -441,6 +441,11 @@ export default {
           })
         }
       }).catch((error) => { console.log(error) })
+    },
+    keyDown (event, quoi) {
+      if (event.keyCode === 13) {
+        if (quoi === 'qf') { this.majUser('qf') }
+      }
     }
   }
 }

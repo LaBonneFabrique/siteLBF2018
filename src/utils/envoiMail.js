@@ -10,7 +10,7 @@ export var mailMixins = {
   methods: {
     envoiMailMDP (email, prenom, uId, idToken) {
       console.log(idToken)
-      let leMessage = messageMDP.replace('**prenom**', 'Bob')
+      let leMessage = messageMDP.replace('**prenom**', prenom)
       leMessage = leMessage.replace('**uId**', uId)
       leMessage = leMessage.replace('**idToken**', idToken)
       console.log(leMessage)
@@ -18,9 +18,21 @@ export var mailMixins = {
         mutation: ENVOI_MAIL,
         variables: {
           tag: 'resetMDP',
-          from: 'contact@labonnefabrique.fr',
-          to: ['luchier@gmail.com'],
+          from: 'lasalledesmachines@labonnefabrique.fr',
+          to: [email],
           subject: 'Récupération de votre mot de passe',
+          html: leMessage
+        }
+      })
+    },
+    envoiMail (email, leTitre, leMessage) {
+      return this.$apollo.mutate({
+        mutation: ENVOI_MAIL,
+        variables: {
+          tag: 'resetMDP',
+          from: 'lasalledesmachines@labonnefabrique.fr',
+          to: [email],
+          subject: leTitre,
           html: leMessage
         }
       })

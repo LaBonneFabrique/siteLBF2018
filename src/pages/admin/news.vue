@@ -3,7 +3,7 @@
     <q-input
       v-model="newsTitre"
       placeholder='La dernière news croustillante'
-      class="titre"
+      class="titreNews"
       style="margin-bottom: 20px"
       >
   </q-input>
@@ -156,7 +156,7 @@ export default {
         let listeEnum = data.__type.enumValues
         this.listeSection = []
         listeEnum.forEach((valeurEnum) => {
-          this.listeSection.push({label: valeurEnum.name.replace(/([a-z])([A-Z])/g, '$1 $2').replace(/(L)(e)/g, '$1\'$2'), value: valeurEnum.name})
+          this.listeSection.push({label: valeurEnum.name.replace(/([a-z])([A-Z])/g, '$1 $2').replace(/(L)(e)/g, '$1\'$2').replace(/(L)(ate)/g, '$1\'$2').replace('Partage', 'partagé'), value: valeurEnum.name})
         })
       }
     },
@@ -374,7 +374,7 @@ export default {
   .bg-test
     background-color: rgba(75, 188, 196, 0.5)
 
-  .titre
+  .titreNews
     font-size: x-large
     font-variant: small-caps
     padding: 10px

@@ -10,20 +10,15 @@ query listeActivites {
     checkInscriptionCycle
     illustration
     publie
-    creneaux {
-      id
-      dateDebut
-      dateFin
-      idGoogleEvent
-      maxParticipants
-    }
+    dates
+    dateDebut
     prix {
       id
     }
     inscriptions {
       id
       membreId
-      cycleId
+      atelierId
     }
     nbMaxTotalParticipants
   }
@@ -34,24 +29,17 @@ export const QUERY_ALL_ACTIVITES_ASC = gql`
 query listeActivites {
   allActivites(orderBy: dateDebut_ASC, filter: {publie: true}) {
     id
-    idCycle
     titreActivite
     description
+    section
     checkInscription
     lieuActivite
     illustration
     publie
     prix
+    dates
     dateDebut
-    dateFin
-    idGoogleEvent
-    sequenceEvent
     maxParticipants
-    inscriptions {
-      id
-      membreId
-      cycleId
-    }
     type
   }
 }

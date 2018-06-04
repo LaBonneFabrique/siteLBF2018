@@ -186,3 +186,16 @@ mutation effaceToken($id: ID!) {
   }
 }
 `
+
+export const GET_MEMBRE_BY_ID = gql`
+query getMembre($mId: ID!) {
+  allProfils(filter: {id: $mId}) {
+    id
+    nom
+    prenom
+    email
+    dateNaissance
+    badges
+  }
+}
+`

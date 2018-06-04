@@ -95,7 +95,7 @@ import {
 // import {EFFACE_CRENEAU, EFFACE_PRIX, UPDATE_ACTIVITE_PUBLIE, UPDATE_CRENEAU_IDGOOGLEEVENT} from '../constants/activitesGraphQL'
 // import { EFFACE_ACTIVITE, UPDATE_ACTIVITE_PUBLIE, UPDATE_ACTIVITE_SEQUENCE } from '../../constants/activitesGraphQL-2'
 import {LISTE_NEWS, EFFACE_NEWS, UPDATE_NEWS_PUBLIE} from '../../graphQL/news'
-import {GET_ILLU_BY_ID} from '../../constants/illustrationsGraphQL'
+// import {GET_ILLU_BY_ID} from '../../constants/illustrationsGraphQL'
 // import {DELETE_EVENT, UPDATE_EVENT} from '../../graphQL/googleAgendaGraphQL'
 import cloudinary from 'cloudinary-core'
 var cl = new cloudinary.Cloudinary({cloud_name: 'la-bonne-fabrique', secure: true})
@@ -163,7 +163,8 @@ export default {
             }]
             listeUnique += activite.idCycle
             this.etatPublication = activite.publie
-            await this.$apollo.query({
+            imageIllu = cl.url(activite.illustration, { width: 250, height: 150, crop: 'fill', gravity: 'auto' })
+            /* await this.$apollo.query({
               query: GET_ILLU_BY_ID,
               fetchPolicy: 'network-only',
               variables: {
@@ -178,7 +179,7 @@ export default {
               }
             }).catch((error) => {
               console.log(error)
-            })
+            }) */
             let atelier = {
               id: activite.id,
               idCycle: activite.idCycle,

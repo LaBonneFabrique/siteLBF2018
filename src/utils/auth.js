@@ -1,5 +1,5 @@
 import { LocalStorage } from 'quasar'
-import { SIGNUP, AUTHENTIFICATION, FIND_USER_ROLE, MAJ_USER_PROFIL } from '../constants/userAuth'
+import { SIGNUP, AUTHENTIFICATION, FIND_USER_ROLE, MAJ_USER_PROFIL } from '../graphQL/userAuth'
 
 export var authMixins = {
   methods: {

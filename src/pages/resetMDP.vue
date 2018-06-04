@@ -38,7 +38,7 @@ import {QSpinnerGears, date} from 'quasar'
 const { addToDate } = date
 import { validationMixin } from 'vuelidate'
 import { required, sameAs, minLength } from 'vuelidate/lib/validators'
-import { VERIF_TOKEN, EFFACE_TOKEN, RESET_MDP_TOKEN, FIND_USER_BY_ID_EMAIL, UPDATE_MDP } from '../constants/userAuth'
+import { VERIF_TOKEN, EFFACE_TOKEN, RESET_MDP_TOKEN, FIND_USER_BY_ID_EMAIL, UPDATE_MDP } from '../graphQL/userAuth'
 import { mailMixins } from '../utils/envoiMail'
 
 export default {

@@ -34,7 +34,7 @@
       <div class="row justify-end">
         <q-radio
           v-model="choixIllustration"
-          :val="illu.id"
+          :val="nomIllustration(illu.imageId, illu.format)"
           unchecked-icon="far fa-square"
           checked-icon="far fa-check-square"
         />
@@ -117,7 +117,7 @@ export default {
       update (data) {
         this.listeDesIllu = []
         data.allActivitesIllustrations.forEach((image) => {
-          this.listeDesIllu.push({id: image.id, imageId: image.idImage, image: cl.url(image.idImage + '.' + image.format, { width: 150, height: 150, crop: 'fill', gravity: 'auto' }), checked: false, efface: false})
+          this.listeDesIllu.push({id: image.id, imageId: image.idImage, format: image.format, image: cl.url(image.idImage + '.' + image.format, { width: 150, height: 150, crop: 'fill', gravity: 'auto' }), checked: false, efface: false})
         })
       }
     }
@@ -126,8 +126,9 @@ export default {
     this.choixIllustration = this.currentImage
   },
   methods: {
-    trouverImage: function (idImage) {
-      var retour = this.listeDesIllu.find(item => item.id === idImage)
+    trouverImage: function (image) {
+      let imageId = image.split('.')[0]
+      var retour = this.listeDesIllu.find(item => item.imageId === imageId)
       if (retour) {
         return retour.image
       } else {
@@ -216,6 +217,9 @@ export default {
     valideImage () {
       this.$emit('update:currentImage', this.choixIllustration)
       this.modalIllustration = false
+    },
+    nomIllustration (nom, format) {
+      return nom + '.' + format
     }
   }
 }

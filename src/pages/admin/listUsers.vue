@@ -18,7 +18,7 @@
 <script>
 import {QSpinnerGears} from 'quasar'
 import {LISTE_USERS} from '../../constants/usersGraphQL'
-import {MAJ_MEMBRE_ROLE} from '../../constants/userAuth'
+import {MAJ_MEMBRE_ROLE} from '../../graphQL/userAuth'
 
 export default {
   components: {

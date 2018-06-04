@@ -11,16 +11,30 @@ export default [
         component: () => import('pages/index')
       },
       {
-        path: '/dashboard/:userId',
+        path: '/resetmdp/:uId/:tId',
+        props: true,
+        component: () => import('pages/resetMDP')
+      }
+    ]
+  },
+  {
+    path: '/dashboard',
+    component: () => import('layouts/dashboard'),
+    beforeEnter: requireAuth,
+    children: [
+      {
+        path: ':userId',
         name: 'Tableau de bord',
         component: () => import('pages/dashboard'),
         props: true,
         beforeEnter: requireAuth
       },
       {
-        path: '/resetmdp/:uId/:tId',
+        path: ':userId/:membreId',
+        name: 'Page adherent',
+        component: () => import('pages/adherent'),
         props: true,
-        component: () => import('pages/resetMDP')
+        beforeEnter: requireAuth
       }
     ]
   },
@@ -42,7 +56,7 @@ export default [
       {
         path: 'nouvelAtelier',
         component: () => import('pages/admin/formulaireActivite'),
-        props: {type: 'Ateliers'},
+        props: {type: 'Ateliers', dupliquer: false},
         name: 'ajoutAtelier'
       },
       {
@@ -52,12 +66,12 @@ export default [
       },
       {
         path: 'modifierAtelier/:idAtelier',
-        props: true,
+        props: (route) => ({idAtelier: route.params.idAtelier, dupliquer: false, type: 'edit'}),
         component: () => import('pages/admin/formulaireActivite')
       },
       {
         path: 'dupliquerAtelier/:idAtelier',
-        props: (route) => ({idAtelier: route.params.idAtelier, dupliquer: true}),
+        props: (route) => ({idAtelier: route.params.idAtelier, dupliquer: true, type: 'dupliquer'}),
         component: () => import('pages/admin/formulaireActivite')
       },
       {

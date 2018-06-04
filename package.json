@@ -21,9 +21,12 @@
     "eventemitter3": "^2.0.3",
     "graphql": "^0.13.1",
     "graphql-tag": "^2.8.0",
+    "marked": "^0.3.19",
     "subscriptions-transport-ws": "^0.9.6",
-    "vue": "^2.5.13",
+    "vue": "^2.5.16",
     "vue-apollo": "^3.0.0-beta.4",
+    "vue-head": "^2.0.12",
+    "vue-lazy-background-images": "^1.0.0",
     "vue-markdown": "^2.2.4",
     "vue-router": "^3.0.1",
     "vue2-dropzone": "^3.0.4",
@@ -40,7 +43,7 @@
     "eslint-plugin-promise": "3.4.0",
     "eslint-plugin-standard": "3.0.1",
     "eslint-plugin-vue": "4.0.0",
-    "quasar-cli": "^0.15.7"
+    "quasar-cli": "^0.15.20"
   },
   "engines": {
     "node": ">= 8.9.0",

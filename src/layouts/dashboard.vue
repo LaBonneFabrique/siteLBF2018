@@ -2,19 +2,21 @@
 
     <q-layout
     ref="layout"
-    :view="layoutStore.view"
-    :left-breakpoint="layoutStore.leftBreakpoint"
-    :right-breakpoint="layoutStore.rightBreakpoint"
-    :reveal="layoutStore.reveal"
+    :view="layoutStoreDashboard.view"
+    :left-breakpoint="layoutStoreDashboard.leftBreakpoint"
+    :right-breakpoint="layoutStoreDashboard.rightBreakpoint"
+    :reveal="layoutStoreDashboard.reveal"
     :header-class="{'no-shadow': true}"
   >
-  <q-layout-header class="no-shadow">
+
+  <q-layout-header reveal class="no-shadow">
       <q-toolbar color="amber-8" inverted class="no-shadow">
         <img
           src="~assets/logoLBFpetit.png"
           style="margin-rigt: 10px;"
         />
     <q-toolbar-title>
+      Tableau de bord de la famille {{profileData.profil[0].nom}}
     </q-toolbar-title>
     <q-btn flat v-if="!estIdentifie" color="amber-8" @click="openMenuIdentification()">
       <q-icon name="fas fa-sign-in-alt" style="margin-right: 5px"/> S'identifier
@@ -27,15 +29,6 @@
         <q-btn flat inverted color="amber-8" @click="menuIdentification = false">Annuler</q-btn>
         <q-btn flat inverted color="light-green-8" @click="verifMail()">Envoyer</q-btn>
       </q-popover>
-    </q-btn>
-    <q-btn
-        flat inverted dense
-        color="primary"
-        label="filtrer"
-        icon="fas fa-filter"
-        class="lt-md"
-        @click="changeMenuFiltre"
-        >
     </q-btn>
     <q-btn
       flat
@@ -75,44 +68,24 @@
 
   </q-toolbar>
   </q-layout-header>
-  <q-layout-drawer side="left" v-model="menuLayout" :content-class="['no-shadow', 'menuCadre']" :breakpoint="768">
-          <div class="menuCategories">
-        <div class="menuTitreCategories">Catégories</div>
-        <q-checkbox v-model="listeTypes" keep-color color="primary" label="Ateliers" val="Ateliers" class="menuItemCategorie" @input="emitListeType"/>
-        <q-checkbox v-model="listeTypes" keep-color color="secondary" label="Infos" val="Infos" class="menuItemCategorie" @input="emitListeType"/>
-        <q-checkbox v-model="listeTypes" keep-color color="tertiary" label="Petites Annonces" val="PetitesAnnonces" class="menuItemCategorie" @input="emitListeType"/>
-      </div>
-      <div class="menuFiltreTitre">Filtrer par section</div>
-      <svg viewBox="0 0 350 350" width="100" height="100" :class="['menuCowork', {'coworkActive': testFiltre('LespaceCoworking')}]" >
-        <a @click="toggleFiltres('LespaceCoworking')">
-      <use xlink:href="/statics/iconsLBF/coworking.svg#LespaceCoworking"/>
-        </a>
-      </svg>
-      <svg viewBox="0 0 350 350" width="100" height="100" :class="['menuLBF', {'lbfActive': testFiltre('LaBonneFabrique')}]" >
-        <a @click="toggleFiltres('LaBonneFabrique')">
-      <use xlink:href="/statics/iconsLBF/bonnefabrique.svg#LaBonneFabrique"/>
-        </a>
-      </svg>
-      <svg viewBox="0 0 350 350" width="100" height="100" :class="['menuBrasserie', {'brasserieActive': testFiltre('LaBrasserie')}]" >
-        <a @click="toggleFiltres('LaBrasserie')">
-      <use xlink:href="/statics/iconsLBF/brasserie.svg#LaBrasserie"/>
-        </a>
-      </svg>
-      <svg viewBox="0 0 350 350" width="100" height="100" :class="['menuJardin', {'jardinActive': testFiltre('JardinPartage')}]" >
-        <a @click="toggleFiltres('JardinPartage')">
-      <use xlink:href="/statics/iconsLBF/jardin.svg#JardinPartage"/>
-        </a>
-      </svg>
-      <svg viewBox="0 0 350 350" width="100" height="100" :class="['menuAtelier', {'atelierActive': testFiltre('Latelier')}]" >
-        <a @click="toggleFiltres('Latelier')">
-      <use xlink:href="/statics/iconsLBF/atelier.svg#Latelier"/>
-        </a>
-      </svg>
+    <q-layout-drawer side="left" v-model="leftDrawerOpen" content-class="no-shadow colonneGauche">
+    <!-- drawer content -->
+    <q-list link dense no-border>
+      <q-item class="colonneGaucheListe" :to="{name:'Tableau de bord'}" exact>
+            Général
+      </q-item>
+      <q-item class="colonneGaucheListe" v-for="m in profileData.profil" :key = "m.id" :to="{name: 'Page adherent', params: {userId: userId, membreId: m.id}}">
+          <img :src="avatar(m.id)" width="40" style="margin-right: 5px"/>
+            {{m.prenom}}
+      </q-item>
+      <q-item class="colonneGaucheListe" :to="{name: 'accueil'}" exact>
+        Retour au site
+      </q-item>
+    </q-list>
   </q-layout-drawer>
+
 <q-page-container>
-  <q-page>
       <router-view :key="$route.fullPath" />
-  </q-page>
 </q-page-container>
 
 <q-modal v-model="modalConnexion" :content-css="{padding: '20px'}" minimized @show="$refs.password.focus()">
@@ -139,51 +112,6 @@
     <q-btn flat inverted color="light-green-8" @click="inscription()" :disable="$v.nom.$error || $v.prenom.$error || $v.email.$error || $v.password.$error || $v.password.$error || $v.repeatPassword.$error">S'enregistrer</q-btn>
 </q-modal>
 
-<q-modal
-  v-model="menuFiltre"
-  position="left"
-  :content-css="{height: '460px'}"
-  >
-  <q-btn
-  flat inverted
-  class="float-right"
-  icon="fas fa-times"
-  @click="menuFiltre=false"
-  />
-            <div class="menuCategories">
-        <div class="menuTitreCategories">Catégories</div>
-        <q-checkbox v-model="listeTypes" keep-color color="primary" label="Ateliers" val="Ateliers" class="menuItemCategorie" @input="emitListeType"/>
-        <q-checkbox v-model="listeTypes" keep-color color="secondary" label="Infos" val="Infos" class="menuItemCategorie" @input="emitListeType"/>
-        <q-checkbox v-model="listeTypes" keep-color color="tertiary" label="Petites Annonces" val="PetitesAnnonces" class="menuItemCategorie" @input="emitListeType"/>
-      </div>
-      <div class="menuFiltreTitre">Filtrer par section</div>
-      <svg viewBox="0 0 350 350" width="100" height="100" :class="['menuCowork', {'coworkActive': testFiltre('LespaceCoworking')}]" >
-        <a @click="toggleFiltres('LespaceCoworking')">
-      <use xlink:href="/statics/iconsLBF/coworking.svg#LespaceCoworking"/>
-        </a>
-      </svg>
-      <svg viewBox="0 0 350 350" width="100" height="100" :class="['menuLBF', {'lbfActive': testFiltre('LaBonneFabrique')}]" >
-        <a @click="toggleFiltres('LaBonneFabrique')">
-      <use xlink:href="/statics/iconsLBF/bonnefabrique.svg#LaBonneFabrique"/>
-        </a>
-      </svg>
-      <svg viewBox="0 0 350 350" width="100" height="100" :class="['menuBrasserie', {'brasserieActive': testFiltre('LaBrasserie')}]" >
-        <a @click="toggleFiltres('LaBrasserie')">
-      <use xlink:href="/statics/iconsLBF/brasserie.svg#LaBrasserie"/>
-        </a>
-      </svg>
-      <svg viewBox="0 0 350 350" width="100" height="100" :class="['menuJardin', {'jardinActive': testFiltre('JardinPartage')}]" >
-        <a @click="toggleFiltres('JardinPartage')">
-      <use xlink:href="/statics/iconsLBF/jardin.svg#JardinPartage"/>
-        </a>
-      </svg>
-      <svg viewBox="0 0 350 350" width="100" height="100" :class="['menuAtelier', {'atelierActive': testFiltre('Latelier')}]" >
-        <a @click="toggleFiltres('Latelier')">
-      <use xlink:href="/statics/iconsLBF/atelier.svg#Latelier"/>
-        </a>
-      </svg>
-</q-modal>
-
   </q-layout>
 </template>
 
@@ -193,11 +121,11 @@ import {
   date
 } from 'quasar'
 const { addToDate } = date
-import layoutStore from '../constants/layoutStore'
+import layoutStoreDashboard from '../constants/layoutStoreDashboard'
 import { authMixins } from '../utils/auth'
 import { validationMixin } from 'vuelidate'
 import { email, required, sameAs, minLength } from 'vuelidate/lib/validators'
-import {FIND_EMAIL, RESET_MDP_TOKEN} from '../graphQL/userAuth'
+import {FIND_EMAIL, RESET_MDP_TOKEN, FIND_USER_BY_ID} from '../graphQL/userAuth'
 import { mailMixins } from '../utils/envoiMail'
 
 async function isUnique () {
@@ -221,14 +149,14 @@ export default {
   components: {
   },
   created () {
-    // this.$eventBus.$on('logginState', this.updateEstIdentifie)
+    this.$eventBus.$on('logginState', this.updateEstIdentifie)
   },
   beforeDestroy () {
-    // this.$eventBus.$off('logginState', this.updateEstIdentifie)
+    this.$eventBus.$off('logginState', this.updateEstIdentifie)
   },
   data () {
     return {
-      layoutStore,
+      layoutStoreDashboard,
       estIdentifie: this.$q.localStorage.has('token'),
       email: '',
       password: '',
@@ -241,10 +169,41 @@ export default {
       modalInscription: false,
       modalConnexion: false,
       prenomRecoverMDP: '',
-      menuLayout: true,
-      listeFiltres: [],
-      listeTypes: ['Ateliers', 'Infos', 'PetitesAnnonces'],
-      menuFiltre: false
+      leftDrawerOpen: true,
+      userId: this.$q.localStorage.get.item('idUser'),
+      profileData: {}
+    }
+  },
+  apollo: {
+    allUsers: {
+      query: FIND_USER_BY_ID,
+      variables () {
+        return {
+          id: this.userId
+        }
+      },
+      fetchPolicy: 'network-only',
+      loadingKey: 'loadingUser',
+      watchLoading (isLoading, countModifier) {
+        this.loadingUser = isLoading
+        if (isLoading) {
+          this.$q.loading.show({
+            spinner: QSpinnerCircles,
+            message: 'Chargement des données',
+            messageColor: 'white',
+            spinnerSize: 150, // in pixels
+            spinnerColor: 'white',
+            customClass: 'bg-test'
+          })
+        } else {
+          this.$q.loading.hide()
+        }
+      },
+      result (result) {
+        this.profileData = Object.assign({}, result.data.allUsers[0])
+        this.profileData.profil = Object.assign({}, result.data.allUsers[0].profil)
+        console.log(result)
+      }
     }
   },
   validations: {
@@ -273,25 +232,6 @@ export default {
     this.estIdentifie = this.$q.localStorage.has('token')
   },
   methods: {
-    emitListeType () {
-      console.log('pof, emit')
-      if (this.listeTypes.length === 0) {
-        this.listeTypes = ['Ateliers', 'Infos', 'PetitesAnnonces']
-      }
-      this.$eventBus.$emit('filtreTypes', this.listeTypes)
-    },
-    testFiltre (filtre) {
-      return (this.listeFiltres.indexOf(filtre) >= 0 || this.listeFiltres.length === 0)
-    },
-    toggleFiltres (filtre) {
-      let index = this.listeFiltres.indexOf(filtre)
-      if (index < 0) {
-        this.listeFiltres.push(filtre)
-      } else {
-        this.listeFiltres.splice(index, 1)
-      }
-      this.$eventBus.$emit('filtreMenu', this.listeFiltres)
-    },
     inscription: async function () {
       let nomCap = this.nom.charAt(0).toUpperCase() + this.nom.slice(1)
       let prenomCap = this.prenom.charAt(0).toUpperCase() + this.prenom.slice(1)
@@ -361,7 +301,6 @@ export default {
       this.menuGauche = false
       this.menuInscription = false
       this.menuIdentification = false
-      this.$eventBus.$emit('logginState')
       this.$router.push({name: 'accueil'})
     },
     updateEstIdentifie: function () {
@@ -475,8 +414,8 @@ export default {
         }
       }
     },
-    changeMenuFiltre () {
-      this.menuFiltre = !this.menuFiltre
+    avatar: function (mId) {
+      return 'https://api.adorable.io/avatars/150/' + mId + '.png'
     }
   }
 }
@@ -488,146 +427,14 @@ export default {
 .bg-test
   background-color: rgba(75, 188, 196, 0.5)
 
-.menuCadre
-  float: left
-  width: 150px
-  height: 460px
-  padding: 0px
-  margin: 0px
+.colonneGauche
+  width: 200px
 
-.menuCategories
-  position: relative
-  width: 140px
-  height: 80px
-  left: 0px !important
-  top: 3px
-
-.menuTitreCategories
-  position: relative
-  width: 140px
-  height: 15px
-  top: 3px
-  font-family: Roboto
-  font-weight: 900
-  font-size: 14px
+.colonneGaucheListe
   text-align: center
-  font-variant: small-caps
-  color: #5C5C5C
-  margin-bottom: 6px
-
-.menuListCategorie
-  margin: 0px
-  padding: 0px
-  font-family: Roboto
-  font-style: normal
-  font-weight: normal
-  line-height: normal
-  font-size: 13px
-  text-align: center !important
-  text-transform: capitalize
-
-.menuItemCategorie
-  position: relative
-  width: 140px
-  height: 15px
-  left: 10px
-  font-family: Roboto
-  font-style: normal
-  font-weight: normal
-  line-height: normal
-  font-size: 13px
-  text-align: center !important
-  text-transform: capitalize
-  margin: 0px
   margin-bottom: 5px
+  padding: 7px 15px !important
 
-.menuFiltreTitre
-  position: absolute
-  width: 130px
-  height: 15px
-  left: 5px
-  top: 90px
-  font-family: Roboto
-  font-style: normal
-  font-weight: 900
-  line-height: normal
-  font-size: 14px
-  text-align: center
-  font-variant: small-caps
-  color: #5C5C5C
-
-.menuCowork
-  position: absolute
-  width: 80px
-  height: 80px
-  left: 10px
-  top: 109px
-.menuCowork a
-  fill: rgba(75, 188, 196, 0.4)
-.menuCowork a:hover
-  fill: rgba(75, 188, 196, 0.6)
-  cursor: pointer
-.coworkActive a
-  fill: rgba(75, 188, 196, 1)
-
-.menuLBF
-  position: absolute
-  width: 80px
-  height: 80px
-  left: 50px
-  top: 171px
-.menuLBF a
-  fill: rgba(227, 46, 57, 0.4)
-.menuLBF a:hover
-  fill: rgba(227, 46, 57, 0.6)
-  cursor: pointer
-.lbfActive a
-  fill: rgba(227, 46, 57, 1)
-
-.menuBrasserie
-  position: absolute
-  width: 80px
-  height: 80px
-  left: 10px
-  top: 233px
-.menuBrasserie a
-  fill: rgba(252, 198, 45, 0.4)
-.menuBrasserie a:hover
-  fill: rgba(252, 198, 45, 0.6)
-  cursor: pointer
-.brasserieActive a
-  fill: rgba(252, 198, 45, 1)
-
-.menuJardin
-  position: absolute
-  width: 80px
-  height: 80px
-  left: 50px
-  top: 295px
-.menuJardin a
-  fill: rgba(147, 192, 33, 0.4)
-.menuJardin a:hover
-  fill: rgba(147, 192, 33, 0.6)
-  cursor: pointer
-.jardinActive a
-  fill: rgba(147, 192, 33, 1)
-
-.menuAtelier
-  position: absolute
-  width: 80px
-  height: 80px
-  left: 10px
-  top: 357px
-.menuAtelier a
-  fill: rgba(238, 115, 46, 0.4)
-.menuAtelier a:hover
-  fill: rgba(238, 115, 46, 0.6)
-  cursor: pointer
-.atelierActive a
-  fill: rgba(238, 115, 46, 1)
-  cursor: pointer
-
-.typeAtelier:hover
-  background-color: $coworking
-
+.router-link-active
+  background-color: $coworkingTransparent !important
 </style>
