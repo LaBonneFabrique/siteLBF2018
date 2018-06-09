@@ -248,7 +248,9 @@ export default {
       })
       this.listeActivitesCycle[id].dates.forEach((laDate) => {
         // promises.push(this.effacerEventGCalendar(laDate.idGoogleEvent))
-        datesAEffacer.push(laDate.uid)
+        laDate.horaires.forEach((horaire) => {
+          datesAEffacer.push(horaire.uid)
+        })
       })
       this.effaceEventFromAgenda(datesAEffacer)
       promises.push(
@@ -317,13 +319,33 @@ export default {
         spinnerColor: 'white',
         customClass: 'bg-test'
       })
-      let lesDates = []
+      // let lesDates = []
       let promises = []
       let datesAEffacer = []
+      let datesForAgenda = []
+      let datesForSave = []
       this.listeActivitesCycle[id].dates.forEach((laDate, index) => {
         // const sequence = laDate.sequenceEvent + 1
-        datesAEffacer.push(laDate.uid)
-        lesDates.push({date: laDate.date, horaire: laDate.horaire, uid: this.generateId(), status: newPublication ? 'CONFIRMED' : 'TENTATIVE'})
+        let horairesForSave = []
+        laDate.horaires.forEach((horaire) => {
+          datesAEffacer.push(horaire.uid)
+          let uid = this.generateId()
+          datesForAgenda.push({
+            date: laDate.date,
+            horaire: horaire.creneau,
+            uid: uid,
+            status: newPublication ? 'CONFIRMED' : 'TENTATIVE'
+          })
+          horairesForSave.push({
+            creneau: horaire.creneau,
+            uid: uid
+          })
+        })
+        datesForSave.push({
+          date: laDate.date,
+          horaires: horairesForSave
+        })
+        // lesDates.push({date: laDate.date, horaire: laDate.horaire, uid: this.generateId(), status: newPublication ? 'CONFIRMED' : 'TENTATIVE'})
         /* if (newPublication) {
           promises.push(this.ajouterEventGCalendar(laDate, this.listeActivitesCycle[id].summary, this.listeActivitesCycle[id].location, this.listeActivitesCycle[id].description, 'confirmed'))
         } else {
@@ -331,14 +353,14 @@ export default {
         } */
       })
       this.effaceEventFromAgenda(datesAEffacer)
-      this.addAgenda(this.listeActivitesCycle[id].summary, this.listeActivitesCycle[id].location, lesDates)
+      this.addAgenda(this.listeActivitesCycle[id].summary, this.listeActivitesCycle[id].location, datesForAgenda)
       promises.push(
         this.$apollo.mutate({
           mutation: UPDATE_ACTIVITE_PUBLIE,
           variables: {
             id: this.listeActivitesCycle[id].aId,
             publie: newPublication,
-            dates: lesDates
+            dates: datesForSave
           }
         }).catch((error) => {
           this.$q.loading.hide()

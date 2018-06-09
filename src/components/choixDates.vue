@@ -1,6 +1,6 @@
 <template>
   <div class="formDate">
-    <q-btn color="primary" flat @click="openChoixDate = true">Ajouter des dates</q-btn>
+    <q-btn color="primary" flat dense @click="openChoixDate = true">Ajouter des dates</q-btn>
     <q-modal v-model="openChoixDate" minimized :content-css="{padding: '20px'}">
   <q-field
     icon="fa-calendar"

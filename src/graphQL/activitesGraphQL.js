@@ -41,6 +41,12 @@ query listeActivites {
     dateDebut
     maxParticipants
     type
+    inscriptions {
+      id
+      mail
+      participant
+      dateUID
+    }
   }
 }
 `

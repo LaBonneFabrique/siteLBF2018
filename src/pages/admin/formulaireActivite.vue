@@ -19,7 +19,7 @@
           <q-field
             icon="fas fa-globe"
             label="Lieu"
-            labelWidth="2"
+            labelWidth="1"
             style="margin-top: 10px"
             icon-color="tertiary"
           >
@@ -92,29 +92,31 @@
               <q-field
                 icon="fas fa-clock"
                 :label-width="2"
-                label="horaire"
+                label="horaires"
                 style="margin-top: 5px"
                 class="col-md-8 offset-1"
                 icon-color="primary"
                 >
+                <q-btn label="ajouter un horaire" dense color="primary" flat @click="ajoutHoraire()"></q-btn>
               </q-field>
-              <div class="row">
+              <div class="row" v-for="(unHoraire, index) in horaires" :key="index">
                   <q-range
-                    v-model="horaire"
+                    v-model="unHoraire.creneau"
                     :min="9"
                     :max="22"
                     :step="0.5"
                     snap
                     markers
                     label-always
-                    :left-label-value="afficheHeure(horaire.min)"
-                    :right-label-value="afficheHeure(horaire.max)"
+                    :left-label-value="afficheHeure(unHoraire.creneau.min)"
+                    :right-label-value="afficheHeure(unHoraire.creneau.max)"
                     class="offset-1 col-6"
                   />
+                  <q-btn class="col-1"  v-if="index > 0" icon="far fa-trash-alt" flat color="primary" dense size="18px" @click="removeCreneau(index)"></q-btn>
                 </div>
             <q-field
                 icon="fa-calendar"
-                :label-width="1"
+                :label-width="2"
                 label="dates"
                 class="col-md-10 offset-1"
                 style="margin-bottom: 10px; margin-top: 10px"
@@ -152,11 +154,10 @@
                 >
             <q-input v-model='pri.prix' type="number" placeholder='0' class="col-sm-1" />
             </q-field>
-            <q-btn flat color="secondary" class="col-2 offset-2" @click="removePrix(index)">
+            <q-btn flat color="secondary" icon="far fa-trash-alt" class="col-2 offset-2" @click="removePrix(index)">
                 <q-tooltip color="amber-8">
                   Effacer ce prix
               </q-tooltip>
-                <q-icon name="fa-trash" />
               </q-btn>
             </div>
             <q-field
@@ -177,66 +178,6 @@
             </q-field>
           </div>
       </div>
-            <!--<div class="row">
-            <div  v-for="(creneau, index) in dataEvent.creneaux" class="col-sm-5 liste" :key="creneau.date+index">
-            <div class="row">
-              <q-field
-                icon="fa-calendar"
-                :label-width="1"
-                class="col-8"
-                >
-                <q-datetime
-                    v-model="creneau.date"
-                    type="date"
-                    format24h
-                    float-label="Date"
-                    format="DD MMMM YYYY"
-                    :month-names="monthNames"
-                    :day-names="dayNames"
-                    monday-first
-                    ok-label="valider"
-                    cancel-label="annuler"
-                    clear-label="effacer"
-                    :min="aujourdhui"
-                    />
-              </q-field>
-              <q-btn flat color="amber-14" class="col-2 offset-2" @click="removeHoraire(index)" v-if = "boutonPoubelleCreneau(index)">
-                <q-tooltip color="amber-8">
-                  Effacer cette date
-              </q-tooltip>
-                <q-icon name="fa-trash" />
-              </q-btn>
-            </div>
-              <q-field
-                icon="fas fa-clock"
-                :label-width="1"
-                style="margin-top: 5px"
-                >
-                <q-range
-                    v-model="creneau.horaire"
-                    :min="9"
-                    :max="18"
-                    :step="0.5"
-                    snap
-                    markers
-                    label
-                    :left-label-value="afficheHeure(creneau.horaire.min)"
-                    :right-label-value="afficheHeure(creneau.horaire.max)"
-                  />
-              </q-field>
-              <div class="row" v-if="dataEvent.checkInscription" style="margin-top: 5px">
-              <q-field
-                icon="fa-users"
-                :label-width="1"
-                class="col-md-4"
-              >
-                <q-input v-model="creneau.maxParticipants" type="number" />
-              </q-field>
-
-              </div>
-            </div>
-            </div> -->
-
          <div class="row" style="margin-bottom: 20px">
     <q-btn
           icon="fa-times"
@@ -362,6 +303,7 @@
 import {
   QSpinnerGears
 } from 'quasar'
+import { cloudinaryKeys } from '../../constants/cloudinaryKeys'
 import markdownEditor from '../../components/markdownEditor'
 import choixDates from '../../components/choixDates'
 import {DEMINER_HTML} from '../../graphQL/sanitize'
@@ -425,7 +367,8 @@ export default {
       aujourdhui: newDate,
       horaire: {min: 9, max: 10},
       maxParticipants: 8,
-      lesDates: []
+      lesDates: [],
+      horaires: [{creneau: {min: 14, max: 16}}]
     }
   },
   apollo: {
@@ -496,12 +439,19 @@ export default {
       update (data) {
         Object.assign(this.dataEvent, data.allActivites[0])
         this.maxParticipants = this.dataEvent.maxParticipants
+        this.horaires = []
+        this.dataEvent.dates[0].horaires.forEach((horaire) => this.horaires.push(
+          {
+            creneau: horaire.creneau,
+            uid: horaire.uid
+          }))
+        console.log('horaires', this.horaires)
         this.dataEvent.dates.forEach((laDate) => {
-          this.horaire = laDate.horaire
+          console.log('chaque date', laDate)
+          // this.horaires = laDate.horaires
           this.lesDates.push({
             date: laDate.date,
-            horaire: this.horaire,
-            uid: laDate.uid
+            horaires: laDate.horaires
           })
           /* if (laDate.idGoogleEvent) {
             this.lesDates.push({
@@ -517,6 +467,7 @@ export default {
             })
           } */
         })
+        console.log('dates', this.lesDates)
         this.dataEvent.prix = []
         data.allActivites[0].prix.forEach((prix) => {
           this.dataEvent.prix.push({id: prix.id, description: prix.description, prix: prix.prix, qf: prix.qf})
@@ -526,18 +477,26 @@ export default {
     }
   },
   methods: {
+    ajoutHoraire () {
+      this.horaires.push({creneau: {min: 14, max: 16}})
+    },
+    removeCreneau (index) {
+      this.horaires.splice(index, 1)
+    },
     resetChoixIllu: function () {
       this.dataEvent.illustration = ''
     },
     removeHoraire: function (index) {
-      /* if (this.lesDates[index].idGoogleEvent) {
-        this.effaceEventGoogleCalendar(this.lesDates[index].idGoogleEvent)
-      } */
-      console.log(this.lesDates[index])
-      if (this.lesDates[index].uid) {
-        console.log('boum, on efface !')
-        this.effaceEventFromAgenda([this.lesDates[index].uid])
+      let dateHorairesAEffacer = []
+      if (this.lesDates[index].horaires) {
+        this.lesDates[index].horaires.forEach((horaire) => {
+          if (horaire.uid) {
+            console.log('boum, on efface !')
+            dateHorairesAEffacer.push(horaire.uid)
+          }
+        })
       }
+      if (dateHorairesAEffacer.length > 0) this.effaceEventFromAgenda(dateHorairesAEffacer)
       this.lesDates.splice(index, 1)
     },
     removePrix: function (index) {
@@ -548,8 +507,8 @@ export default {
     },
     envoieImage: (file, xhr, formData) => {
       formData.append('file', file)
-      formData.append('upload_preset', 'howigptf') // Replace the preset name with your own
-      formData.append('api_key', '355229151489945') // Replace API key with your own Cloudinary key
+      formData.append('upload_preset', cloudinaryKeys.preset) // Replace the preset name with your own
+      formData.append('api_key', cloudinaryKeys.apiKey) // Replace API key with your own Cloudinary key
       formData.append('timestamp', (Date.now() / 1000) | 0)
     },
     envoieSucces (file, response) {
@@ -641,40 +600,35 @@ export default {
       console.log('CREATE')
       let promises = []
       let dateAEffacer = []
+      let datesForAgenda = []
+      let datesForSave = []
       this.lesDates.forEach((laDate, index) => {
-        this.lesDates[index].horaire = this.horaire
-        if (laDate.uid) dateAEffacer.push(laDate.uid)
-        this.lesDates[index].uid = this.generateId()
-        this.lesDates[index].status = publie ? 'CONFIRMED' : 'TENTATIVE'
+        if (laDate.horaires) {
+          laDate.horaires.forEach((horaire) => {
+            if (horaire.uid) {
+              dateAEffacer.push(horaire.uid)
+              console.log('une à effacer')
+            }
+          })
+        }
+        let horairesForSave = []
+        this.horaires.forEach((horaire) => {
+          let uid = this.generateId()
+          datesForAgenda.push({
+            date: laDate.date,
+            horaire: horaire.creneau,
+            uid: uid,
+            status: publie ? 'CONFIRMED' : 'TENTATIVE'
+          })
+          horairesForSave.push({creneau: horaire.creneau, uid: uid})
+        })
+        datesForSave.push({
+          date: laDate.date,
+          horaires: horairesForSave
+        })
       })
       if (dateAEffacer.length > 0) this.effaceEventFromAgenda(dateAEffacer)
-      this.addAgenda(this.dataEvent.titreActivite, this.dataEvent.lieuActivite, this.lesDates)
-      /* if (publie) {
-        await this.addActiviteToGCalendar('confirmed')
-        this.addAgenda()
-      }
-      if (!publie) {
-        // await this.effaceEventGoogleCalendar(creneau.idGoogleEvent)
-        await this.addActiviteToGCalendar('cancelled')
-        // this.dataEvent.creneaux[index].idGoogleEvent = 'delete'
-      }
-      this.$q.loading.show({
-        spinner: QSpinnerGears,
-        message: 'Mise à jour de la base',
-        messageColor: 'white',
-        spinnerSize: 150, // in pixels
-        spinnerColor: 'white',
-        customClass: 'bg-test'
-      })
-      // let dates = []
-      for (let creneau of this.dataEvent.creneaux) {
-        if (creneau.idGoogle) {
-          dates.push({dateDebut: this.ajusteDate(creneau.date, this.horaire.min), dateFin: this.ajusteDate(creneau.date, this.horaire.max), idGoogle: creneau.idGoogle, sequenceEvent: creneau.sequenceEvent})
-          console.log(dates)
-        } else {
-          dates.push({dateDebut: this.ajusteDate(creneau.date, this.horaire.min), dateFin: this.ajusteDate(creneau.date, this.horaire.max)})
-        }
-      } */
+      this.addAgenda(this.dataEvent.titreActivite, this.dataEvent.lieuActivite, datesForAgenda)
       if (this.type === 'Ateliers' || this.dupliquer) {
         promises.push(
           this.$apollo.mutate({
@@ -689,8 +643,8 @@ export default {
               illustration: this.dataEvent.illustration || 'logoLBFSeul_a1t4af.png',
               prix: this.dataEvent.prix,
               publie: publie,
-              dates: this.lesDates,
-              dateDebut: this.lesDates[0].date,
+              dates: datesForSave,
+              dateDebut: datesForSave[0].date,
               maxParticipants: this.maxParticipants,
               type: 'Ateliers'
             }
@@ -712,7 +666,7 @@ export default {
               illustration: this.dataEvent.illustration || 'logoLBFSeul_a1t4af.png',
               prix: this.dataEvent.prix,
               publie: publie,
-              dates: this.lesDates,
+              dates: datesForSave,
               dateDebut: this.lesDates[0].date,
               maxParticipants: this.maxParticipants,
               type: 'Ateliers'

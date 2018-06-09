@@ -9,57 +9,62 @@
       <div v-if="activite.dates.length > 1" class="moisPlus">{{moisPlus(activite.dates)}}</div>
 
       <lazy-background
-        :image-source="urlImage(activite.image,280,180,100,'', 'crop')"
-        :loading-image="urlImage(activite.image,280,180,1,'blur', 'crop')"
+        :image-source="urlImage(activite.image,320,180,100,'', 'crop')"
+        :loading-image="urlImage(activite.image,320,180,1,'blur', 'crop')"
         error-image="/img/error.png"
         imageClass="imageEntete">
       </lazy-background>
-      <div class="placesRestantes" v-if="activite.checkInscription && nbPlacesRestantes(index) > 1" :style="{'background-color': tableCouleurLBF[activite.section]}">
+      <div class="placesRestantes" v-if="activite.checkInscription" :style="{'background-color': tableCouleurLBF[activite.section]}">
       {{nbPlacesRestantes(index)}} places restantes
       </div>
-      <div class="placesRestantes" v-else-if="activite.checkInscription && nbPlacesRestantes(index) > 0" :style="{'background-color': tableCouleurLBF[activite.section]}">
+      <!--<div class="placesRestantes" v-else-if="activite.checkInscription" :style="{'background-color': tableCouleurLBF[activite.section]}">
       Dernière place
       </div>
-      <div class="placesRestantes" v-else :style="{'background-color': tableCouleurLBF[activite.section]}">
+      <div class="placesRestantes" v-else-if="activite.checkInscription" :style="{'background-color': tableCouleurLBF[activite.section]}">
       Complet
       </div>
-      <div class="inscription" v-if="activite.checkInscription" :style="{'background-color': tableCouleurLBF[activite.section]}" @click="creationModalInscription(activite)" :disable="isComplet(activite) || estTropTard(activite.dateDebut)">
-        <!--<q-btn label="Inscriptions" icon="fas fa-edit" dense flat no-caps size="md" class="btnInscriptions"
-          :disable="isComplet(activite) || estTropTard(activite.dateDebut)"
-          @click="creationModalInscription(activite)"
-            >
-          <q-tooltip anchor="bottom middle" self="top middle" v-if="estIdentifie && estTropTard(activite.dateDebut)">
-            La date limite d'inscription est dépassée.
-          </q-tooltip>
-        <q-tooltip v-if="!estIdentifie" anchor="bottom middle" self="top middle">
-          Connectez-vous pour vous inscrire.
-        </q-tooltip>
-        </q-btn> -->
+      :disable="isComplet(activite) || estTropTard(activite.dateDebut)"
+      -->
+      <div class="inscription" v-if="activite.checkInscription" :style="{'background-color': tableCouleurLBF[activite.section]}" @click="creationModalInscription(activite)" >
         <q-icon name="fas fa-edit" size="12px" style="margin-right: 3px"></q-icon>Inscriptions
-        <q-tooltip anchor="bottom middle" self="top middle" v-if="estTropTard(activite.dateDebut)">
+        <!--<q-tooltip anchor="bottom middle" self="top middle" v-if="estTropTard(activite.dateDebut)">
             La date limite d'inscription est dépassée.
           </q-tooltip>
         <q-tooltip anchor="bottom middle" self="top middle" v-else-if="isComplet(activite)">
             L'atelier est complet
-          </q-tooltip>
+          </q-tooltip> -->
       </div>
 
       <div class="cadreInfo" >
         <div class="titreNew"><h1>{{activite.titre}}</h1></div>
         <div v-html="parseMarkdown(activite.description)" :class="['text-justify','cadreTexte-'+activite.type]"></div>
       </div>
-
-      <q-icon name="far fa-clock" class="horaireIconNew" v-if="afficheType(activite.type) == 'Atelier'" size="25px"></q-icon>
-      <div class="horaireNew" v-if="afficheType(activite.type) == 'Atelier'">{{traitementHoraire(activite.dates[0].horaire)}}</div>
-      <q-icon name="fas fa-users" class="placesIconNew" v-if="afficheType(activite.type) == 'Atelier'" size="25px"/>
-      <div class="placesNew" v-if="afficheType(activite.type) == 'Atelier'">{{activite.maxParticipants}} places</div>
+    <div class="row piedCadre"  v-if="afficheType(activite.type) == 'Atelier'">
+      <div class="col-3 lesCategories">
+      <q-icon name="fas fa-users" size="18px" style="margin-bottom: 3px"></q-icon>
+      <div v-if="afficheType(activite.type) == 'Atelier'">{{activite.maxParticipants}} places</div>
+      </div>
+      <div class="col-4 lesCategories">
+        <q-icon name="far fa-clock" v-if="afficheType(activite.type) == 'Atelier'" size="18px" style="margin-bottom: 3px"></q-icon>
+        <p v-for="(horaire,index) in activite.dates[0].horaires" class="no-margin no-padding" :key="'horaire' + index">{{traitementHoraire(horaire.creneau)}}</p>
+      </div>
+      <div class="col-5 lesCategories">
+          <q-icon name="fas fa-euro-sign" v-if="afficheType(activite.type) == 'Atelier'" size="18px" style="margin-bottom: 3px"></q-icon>
+        <p v-for="prix in activite.prix" :key="activite.id.concat(prix.description)" class="no-margin no-padding" v-if="afficheType(activite.type) == 'Atelier'">
+         <span v-if="prix.qf">{{calculPrix(prix.prix,qf)}} € - {{prix.description}}</span>
+         <span v-else>{{prix.prix}} € - {{prix.description}}</span>
+        </p>
+      </div>
+    </div>
+      <!-- <q-icon name="far fa-clock" class="horaireIconNew" v-if="afficheType(activite.type) == 'Atelier'" size="25px"></q-icon>
+      <div class="horaireNew" v-if="afficheType(activite.type) == 'Atelier'">{{traitementHoraire(activite.dates[0].horaires[0].creneau)}}</div>
       <q-icon name="fas fa-euro-sign" class="prixIconNew" v-if="afficheType(activite.type) == 'Atelier'" size="25px"/>
       <div class="prixNew" v-if="afficheType(activite.type) == 'Atelier'">
         <p v-for="prix in activite.prix" :key="activite.id.concat(prix.description)" class="no-margin no-padding" v-if="afficheType(activite.type) == 'Atelier'">
          <span v-if="prix.qf">{{calculPrix(prix.prix,qf)}} € - {{prix.description}}</span>
          <span v-else>{{prix.prix}} € - {{prix.description}}</span>
         </p>
-      </div>
+      </div> -->
 
       <!-- <div :class="['colonneInfos-'+activite.type]" :style="{'background-color': tableCouleurLBF[activite.section]}">
         <div class="nbPlaces" v-if="activite.checkInscription">{{nbPlacesRestantes(index)}} places restantes</div>
@@ -70,25 +75,55 @@
       <div class="titre"><span>Il n'y rien par ici...</span></div>
         <div class="description" style="margin-bottom: 10px">Veuillez modifier votre sélection.</div>
     </q-card>
-    <q-modal v-model = "modalInscription" :content-css="{padding: '20px'}">
+    <q-modal v-model="modalInscription" position="top" :content-css="{padding: '20px'}">
       <h6 style="margin: 0px">Inscription</h6>
       <hr />
-      <div>Sélectionnez le ou les membres de votre famille à inscrire :</div>
-      <q-checkbox
-        v-model="aInscrire"
-        v-for="membre in userData.profil"
-        :label="membre.prenom"
-        :val="membre.id"
-        :key="membre.id"
-        :disable="disableCheckbox(membre.id)"
-        style="margin-right: 10px"/>
-       <div class="row justify-end" style="margin-top: 15px">
-       <q-btn :style="{'color': tableCouleurLBF['LaBrasserie']}" @click="modalInscription = false" flat inverted >Annuler</q-btn>
-       <q-btn v-if="!inscriptionUpdate" :style="{'color': tableCouleurLBF['jardinPartage']}" flat inverted @click="saveInscription()"
-         >
-         Enregistrer</q-btn>
-       <q-btn v-else :style="{'color': tableCouleurLBF['jardinPartage']}" flat inverted @click="saveInscription()">Modifier</q-btn>
-       </div>
+      <p>Entrez votre adresse mail pour commencer l'inscription :</p>
+      <div class="row no-margin no-padding">
+        <div class="col-10 no-margin no-padding">
+        <q-icon name="fas fa-at" size="24px" color="primary" class="iconInputMail" ></q-icon>
+        <q-input class="inputMail" v-model="mailInscription" @input="rechercheMail2()"/>
+        </div>
+        <q-icon name="far fa-check-circle" color="primary" size="24px" class="col-1 offset-1 boutonValider" @click.native="ajoutInscrit()" v-if="listeInscriptions.length === 0">
+          <q-tooltip anchor="bottom middle" self="top middle">
+            Valider
+          </q-tooltip>
+        </q-icon>
+      </div>
+      <div :key="'incription'+index" v-for="(inscription, index) in listeInscriptions" v-if="listeInscriptions.length > 0" class="row no-margin no-padding">
+        <div class="col-10 no-padding" style="margin-top: 4px">
+        <div class="inscriptionNom">
+          <q-icon name="fas fa-user" size="24px" style="padding-bottom: 4px"></q-icon>
+          {{index+1}}.
+        </div>
+           <q-input v-model="inscription.participant" class="inputNom"></q-input>
+        </div>
+        <q-icon name="far fa-trash-alt" color="primary" size="24px" class="col-1 offset-1 boutonValider" @click.native="removeInscrit(index)">
+          <q-tooltip anchor="bottom middle" self="top middle">
+            Effacer
+          </q-tooltip>
+        </q-icon>
+              <div class="row col-10" v-if="activiteInscription.dates[0].horaires.length > 1" style="margin-left: 30px; margin-top: 5px">
+        <q-radio v-for="(horaire,index) in activiteInscription.dates[0].horaires"
+        v-model="inscription.dateUID"
+        :val="horaire.uid"
+        class="no-margin no-padding col-4"
+        :key="'horaireinscription' + index"
+        :label="traitementHoraire(horaire.creneau)"></q-radio>
+        </div>
+      </div>
+    <div class="piedInscription" v-if="listeInscriptions.length > 0">
+      <q-icon name="fas fa-user-plus" color="secondary" size="24px" class="iconPied" @click.native="ajoutInscrit()">
+        <q-tooltip anchor="bottom middle" self="top middle">
+            Ajouter un participant
+          </q-tooltip>
+      </q-icon>
+      <q-icon name="far fa-save" color="primary" size="36px" class="iconPied" @click.native="saveInscription()">
+        <q-tooltip anchor="bottom middle" self="top middle">
+            Enregistrer
+          </q-tooltip>
+      </q-icon>
+    </div>
     </q-modal>
   </q-page>
 </template>
@@ -99,9 +134,11 @@ import {
   date
 } from 'quasar'
 import { QUERY_ALL_ACTIVITES_ASC } from '../graphQL/activitesGraphQL'
+import { RECHERCHE_MAIL, AJOUT_INSCRIPTION, EFFACE_INSCRIPTIONS } from '../graphQL/inscription'
 import { tableCouleurLBF, iconeLBF } from '../constants/constanteLBF'
-import { FIND_USER_BY_ID } from '../graphQL/userAuth'
-import { AJOUT_INSCRIPTION, LISTE_INSCRIPTION, LES_INSCRIPTIONS, LISTE_INSCRIPTION_BY_ATELIER, EFFACE_LISTE_INSCRIPTION, CONNECT_ACTIVITE_INSCRIPTION } from '../graphQL/inscriptionGraphQL'
+// import { FIND_USER_BY_ID } from '../graphQL/userAuth'
+// import { AJOUT_INSCRIPTION, EFFACE_LISTE_INSCRIPTION, CONNECT_ACTIVITE_INSCRIPTION } from '../graphQL/inscriptionGraphQL'
+import { EFFACE_LISTE_INSCRIPTION } from '../graphQL/inscriptionGraphQL'
 import { authMixins } from '../utils/auth'
 import { qfMixins } from '../utils/qf'
 import { genURLImageMixins } from '../utils/genURLImage'
@@ -137,7 +174,10 @@ export default {
       iconeLBF: iconeLBF,
       qf: 0,
       listeFiltres: [],
-      listeFiltreTypes: []
+      listeFiltreTypes: [],
+      mailInscription: '',
+      suiteInscription: false,
+      lesInscriptions: []
     }
   },
   head: {
@@ -193,14 +233,22 @@ export default {
       },
       async result (result) {
         this.listeAteliers = []
-        // this.listeInfosPA = []
-        // var listeActivites = []
-        // this.listeActivites = []
+        this.affichageActivites = []
         for (let activite of result.data.allActivites) {
+          let IDs = []
+          let lesInscriptions = []
+          activite.inscriptions.forEach((inscription) => {
+            IDs.push(inscription.id)
+            lesInscriptions.push({
+              dateUID: inscription.dateUID,
+              mail: inscription.mail,
+              participant: inscription.participant,
+              profil: inscription.profil
+            })
+          })
           switch (activite.type) {
             case 'Ateliers':
-              let inscriptions = []
-              await this.$apollo.query({
+              /* await this.$apollo.query({
                 query: LISTE_INSCRIPTION_BY_ATELIER,
                 fetchPolicy: 'network-only',
                 variables: {
@@ -210,7 +258,7 @@ export default {
                 Object.assign(inscriptions, dataCycle.data.allInscriptions)
               }).catch((error) => {
                 console.log(error)
-              })
+              }) */
               this.affichageActivites.push(
                 {
                   id: activite.id,
@@ -223,74 +271,14 @@ export default {
                   description: activite.description,
                   image: activite.illustration,
                   maxParticipants: activite.maxParticipants,
-                  inscriptions: inscriptions,
+                  inscriptions: lesInscriptions,
                   type: activite.type,
                   dateDebut: activite.dateDebut,
-                  dates: activite.dates
+                  dates: activite.dates,
+                  IDs: IDs
                 })
-              /* if (listeUnique.indexOf(activite.idCycle) < 0) {
-                listeUnique += activite.idCycle
-                listeActivites[activite.idCycle] = [{
-                  aId: activite.id,
-                  gId: activite.idGoogleEvent,
-                  sequence: activite.sequenceEvent,
-                  summary: activite.titreActivite,
-                  location: activite.lieuActivite,
-                  description: activite.description,
-                  dateDebut: activite.dateDebut,
-                  dateFin: activite.dateFin
-                }]
-                let inscriptions = []
-                await this.$apollo.query({
-                  query: LISTE_INSCRIPTION_BY_ATELIER,
-                  fetchPolicy: 'network-only',
-                  variables: {
-                    atelierId: activite.id
-                  }
-                }).then((dataCycle) => {
-                  Object.assign(inscriptions, dataCycle.data.allInscriptions)
-                }).catch((error) => {
-                  console.log(error)
-                })
-                this.affichageActivites.push(
-                  {
-                    id: activite.id,
-                    idCycle: activite.idCycle,
-                    checkInscription: activite.checkInscription,
-                    publie: activite.publie,
-                    section: activite.section,
-                    lieu: activite.lieuActivite,
-                    prix: activite.prix,
-                    titre: activite.titreActivite,
-                    description: activite.description,
-                    image: activite.illustration,
-                    idGoogleEvent: activite.idGoogleEvent,
-                    sequenceEvent: activite.sequenceEvent,
-                    maxParticipants: activite.maxParticipants,
-                    inscriptions: inscriptions,
-                    type: activite.type,
-                    dateDebut: activite.dateDebut,
-                    dateFin: activite.dateFin
-                  }
-                )
-                console.log(this.parseMarkdown(activite.description))
-              } else {
-                listeActivites[activite.idCycle].push({
-                  aId: activite.id,
-                  gId: activite.idGoogleEvent,
-                  sequence: activite.sequenceEvent,
-                  summary: activite.titreActivite,
-                  location: activite.lieuActivite,
-                  description: activite.description,
-                  dateDebut: activite.dateDebut,
-                  dateFin: activite.dateFin
-                })
-              } */
-              // indice += 1
               break
             case 'Infos':
-              // let imageIllu = ''
-              // imageIllu = cl.url(activite.illustration, { width: 300, height: 220, fetchFormat: 'auto', crop: 'lfill', gravity: 'face' })
               this.affichageActivites.push({
                 id: activite.id,
                 publie: activite.publie,
@@ -309,8 +297,8 @@ export default {
         console.log('activités', this.affichageActivites)
         // Object.assign(this.listeActivites, listeActivites)
       }
-    },
-    userData: {
+    }
+    /* userData: {
       query: FIND_USER_BY_ID,
       fetchPolicy: 'network-only',
       variables () {
@@ -345,9 +333,49 @@ export default {
     allInscriptions: {
       query: LES_INSCRIPTIONS,
       fetchPolicy: 'network-only'
-    }
+    } */
   },
   methods: {
+    removeInscrit (index) {
+      this.listeInscriptions.splice(index, 1)
+    },
+    ajoutInscrit () {
+      this.listeInscriptions.push({
+        mail: this.mailInscription,
+        participant: ''
+      })
+    },
+    rechercheMail () {
+      this.$q.loading.show({
+        spinner: QSpinnerGears,
+        message: 'Recherche d\'une inscription',
+        messageColor: 'white',
+        spinnerSize: 150, // in pixels
+        spinnerColor: 'white',
+        customClass: 'bg-test'
+      })
+      this.$apollo.query({
+        query: RECHERCHE_MAIL,
+        variables: {
+          mail: this.mailInscription
+        }
+      }).then((result) => {
+        console.log(result.data)
+        this.$q.loading.hide()
+        Object.assign(this.listeInscriptions, result.data.allInscriptions)
+        if (this.listeInscriptions.length === 0) {
+          this.listeInscriptions.push({
+            mail: this.mailInscription,
+            participant: ''
+          })
+        }
+        this.suiteInscription = true
+      })
+    },
+    rechercheMail2 () {
+      this.listeInscriptions = this.activiteInscription.inscriptions.filter((element) => element.mail === this.mailInscription)
+      console.log(this.listeInscriptions)
+    },
     moisPlus (lesDates) {
       const n = lesDates.length - 1
       let retour = ''
@@ -355,7 +383,6 @@ export default {
         if (index > 0) retour += this.horaireLisible(laDate.date, laDate.date).jourNum + ' ' + this.horaireLisible(laDate.date, laDate.date).mois
         if ((index > 0) && (index < n)) retour += ' - '
       })
-      console.log(retour)
       return retour
     },
     filtreType () {
@@ -397,7 +424,7 @@ export default {
     },
     nbPlacesRestantes: function (nActivite) {
       if (this.affichageActivites[nActivite].checkInscription) {
-        const nbPlaces = this.affichageActivites[nActivite].maxParticipants - this.affichageActivites[nActivite].inscriptions.length
+        const nbPlaces = this.affichageActivites[nActivite].maxParticipants * this.affichageActivites[nActivite].dates[0].horaires.length - this.affichageActivites[nActivite].inscriptions.length
         if (nbPlaces >= 1) return nbPlaces.toString()
         // if (nbPlaces === 1) return 'Dernière place'
         if (nbPlaces === 0) {
@@ -466,9 +493,41 @@ export default {
       let horaire = heureDebut + 'h' + minDebut + '-' + heureFin + 'h' + minFin
       return {horaire: horaire, jour: jour, jourNum: jourNum, mois: mois}
     },
-    saveInscription: function () {
+    saveInscription: async function () {
       this.modalInscription = false
-      if (this.listeInscriptions.length > 0) this.updateInscription()
+      this.$q.loading.show({
+        spinner: QSpinnerGears,
+        message: 'Enregistrement de l\'inscription',
+        messageColor: 'white',
+        spinnerSize: 150, // in pixels
+        spinnerColor: 'white',
+        customClass: 'bg-test'
+      })
+      let lesInscriptions = this.activiteInscription.inscriptions.filter((element) => element.mail !== this.mailInscription)
+      this.listeInscriptions.forEach((newInscription) => {
+        lesInscriptions.push(newInscription)
+      })
+      let promises = []
+      this.activiteInscription.IDs.forEach((leID) => {
+        promises.push(
+          this.$apollo.mutate({
+            mutation: EFFACE_INSCRIPTIONS,
+            variables: {
+              id: leID
+            }
+          })
+        )
+      })
+      await Promise.all(promises).then((data) => console.log(data)).catch((error) => console.log(error))
+      await this.$apollo.mutate({
+        mutation: AJOUT_INSCRIPTION,
+        variables: {
+          inscriptions: lesInscriptions,
+          id: this.activiteInscription.id
+        }
+      })
+      this.$apollo.queries.allActivites.refetch()
+      /* if (this.listeInscriptions.length > 0) this.updateInscription()
       if (this.aInscrire.length === 0) {
         this.modalInscription = false
         return
@@ -493,23 +552,17 @@ export default {
           })
         )
       })
-      Promise.all(promises).then(async (data) => {
-        await this.$apollo.mutate({
-          mutation: CONNECT_ACTIVITE_INSCRIPTION,
-          variables: {
-            aId: this.activiteInscription.id,
-            iId: data[0].data.createInscription.id
-          }
-        }).catch((error) => { console.log(error) })
-        this.$apollo.queries.allActivites.refetch()
-        this.$apollo.queries.userData.refetch()
-        this.$apollo.queries.allInscriptions.refetch()
-        this.$q.loading.hide()
-        this.$q.notify({
-          message: 'Inscription effectuée avec succès.',
-          timeout: 2500,
-          type: 'positive'
-        })
+      Promise.all(promises).then((data) => {
+        console.log(data)
+      }).catch((error) => { console.log(error) }) */
+      // this.$apollo.queries.allActivites.refetch()
+      // this.$apollo.queries.userData.refetch()
+      // this.$apollo.queries.allInscriptions.refetch()
+      this.$q.loading.hide()
+      this.$q.notify({
+        message: 'Inscription effectuée avec succès.',
+        timeout: 2500,
+        type: 'positive'
       })
     },
     updateInscription: function () {
@@ -546,7 +599,8 @@ export default {
       this.aInscrire = []
       this.checkboxInscription = []
       this.listeInscriptions = []
-      if (this.userData.profil.length > 0) {
+      this.modalInscription = true
+      /* if (this.userData.profil.length > 0) {
         this.userData.profil.forEach((membre) => {
           let listeAteliers = this.traitementInscription('membre', membre.id)
           if (listeAteliers.length > 0) this.listeInscriptions.push(listeAteliers[0])
@@ -565,7 +619,7 @@ export default {
           position: 'bottom-left'
         })
         this.$router.push({name: 'Tableau de bord', params: { userId: this.loggedInUser() }})
-      }
+      } */
     },
     traitementInscription: function (leCas, mId, aId) {
       var listeFiltree = []
@@ -655,161 +709,66 @@ export default {
 <style lang="stylus">
 @import '~variables'
 
-$fond = #FFFFFF // #F7FAFA
+.piedInscription
+  margin-top: 10px
+  text-align: right
 
-.sectionNew
-  position: absolute
-  width: 35px
-  height: 35px
-  left: 133px
-  top: 102px
-  z-index: 2
+.iconPied
+  margin-left: 10px
+  &:hover
+    cursor: pointer
 
-.moisNew
-  position: absolute
-  width: 55px
-  height: 32px
-  left: 95px
-  top: 141px
+.boutonValider:hover
+  cursor: pointer
+
+.inscriptionNom
   font-family: Roboto
   font-style: normal
   font-weight: 900
   line-height: normal
   font-size: 24px
-  color: #FFFFFF
-  text-align: left
-  z-index: 3
-
-.typeNew
-  position: absolute
-  width: 46px
-  height: 15px
-  left: 65px
-  top: 102px
-  font-family: Roboto
-  font-style: normal
-  font-weight: 900
-  line-height: normal
-  font-size: 14px
-  text-transform: capitalize
-  color: #FFFFFF
-  z-index: 3
-
-.colonneInfos-Ateliers
-  position: relative
   float: left
-  width: 160px
-  min-height: 300px
-  margin-left: 11px
-  margin-top: 100px
-  border-radius: 5px 5px 5px 5px
-  z-index: 2
+  margin-left: 0px
+  color: $primary
+  margin-bottom: 4px
+  margin-right: 4px
 
-.colonneInfos-PetitesAnnonces
-.colonneInfos-Infos
-  position: relative
+.iconInputMail
   float: left
-  width: 160px
-  height: 82px
-  margin-left: 11px
-  margin-top: 100px
-  border-radius: 5px
-  z-index: 2
 
-.cadreTexte-PetitesAnnonces
-.cadreTexte-Infos
-  position: relative
-  width: 465px
-  margin: 0px
-  margin-left: -160px
-  font-family: Roboto
-  font-style: normal
-  font-weight: normal
-  line-height: normal
-  font-size: 14px
-  text-align: justify
-  background-color: #FFFFFF
+.inputMail
+  height: 17px
+  margin-left: 30px
+  padding: 5px
+  padding-left: 3px
 
-.bg-test
-  background-color: rgba(75, 188, 196, 0.5)
-
-.nbPlaces
-  position: relative
-  width: 140px
-  margin-left: 10px
-  height: 22px
-  margin-top: 240px
-  font-family: Roboto
-  font-style: normal
-  font-weight: normal
-  line-height: normal
-  font-size: 14px
-  text-align: center
-  color: #FFFFFF
-
-.imageEntete
-  position: absolute
-  width: 280px
-  height: 180px
-  left: 0px
-  top: 0px
+.inputNom
+  height: 17px
+  margin-left: 30px
+  padding: 3px
 
 .cadreNew
   position: relative
   display: block
-  width: 280px !important
-  min-height: 510px
+  width: 320px !important
   margin: 0px
   margin-right: 2px
   margin-bottom: 2px
+  @media screen and (max-width: 644px)
+    margin-left: calc(50% \- 160px)
 
-.cadreInfo
-  position: relative
-  width: 280px
-  margin: 0px
-  margin-left: 0px
-  margin-top: 180px
-  min-height: 220px
-  margin-bottom: 120px
-  background-color: rgba(251, 251, 251, 1)
-
-.titreNew
-  display: table
-  position: relative
-  width: 270px
-  height: 55px
-  margin-left: 5px
-  margin-top: 13px
-.titreNew h1
-  display: table-cell
-  vertical-align: middle
-  font-family: Roboto
-  font-style: normal
-  font-weight: 900
-  line-height: normal
-  font-size: 24px
-  text-transform: capitalize
-  color: #000000
-
-.cadreTexte-Ateliers
-  position: relative
-  width: 270px
-  margin-top: 7px
-  margin-bottom: 10px
-  margin: 0px
-  margin-left: 5px
-  font-family: Roboto
-  font-style: normal
-  font-weight: normal
-  line-height: normal
-  font-size: 14px
-  text-align: justify
+.imageEntete
+  position: absolute
+  width: 320px
+  height: 180px
+  left: 0px
+  top: 0px
 
 .cadreDates
   position: absolute
   width: 135px
   height: 63px
-  left: 145px
+  left: 185px
   top: 0px
   z-index: 3
 
@@ -817,7 +776,7 @@ $fond = #FFFFFF // #F7FAFA
   position: absolute
   width: 128px
   height: 43px
-  left: 150px
+  left: 208px
   top: 0px
   font-family: Roboto
   font-style: normal
@@ -833,7 +792,7 @@ $fond = #FFFFFF // #F7FAFA
   position: absolute
   width: 130px
   height: 3px
-  left: 150px
+  left: 190px
   top: 39px
   background: rgba(255, 255, 255, 0.6)
   border-radius: 1px
@@ -841,9 +800,9 @@ $fond = #FFFFFF // #F7FAFA
 
 .moisPlus
   position: absolute
-  width: 128px
+  width: 125px
   height: 17px
-  left: 150px
+  left: 190px
   top: 42px
   font-family: Roboto
   font-style: normal
@@ -854,81 +813,11 @@ $fond = #FFFFFF // #F7FAFA
   color: rgba(255, 255, 255, 0.6)
   z-index: 3
 
-.horaireIconNew
-  position: absolute
-  width: 25px
-  height: 25px
-  left: 59px
-  top: calc(100% \- 113px)
-  z-index: 3
-  color: #FFFFFF
-
-.horaireNew
-  position: absolute
-  width: 135px
-  height: 17px
-  left: 0px
-  top: calc(100% \- 86px)
-  font-family: Roboto
-  font-style: normal
-  font-weight: normal
-  line-height: normal
-  font-size: 14px
-  text-align: center
-  color: #FFFFFF
-
-.placesIconNew
-  position: absolute
-  width: 28px
-  height: 26px
-  left: 56px
-  top: calc(100% \- 60px)
-  z-index: 3
-  color: #FFFFFF
-
-.placesNew
-  position: absolute
-  width: 140px
-  height: 15px
-  left: 0px
-  top: calc(100% \- 35px)
-  font-family: Roboto
-  font-style: normal
-  font-weight: normal
-  line-height: normal
-  font-size: 14px
-  text-align: center
-  color: #FFFFFF
-
-.prixIconNew
-  position: absolute
-  width: 15px
-  height: 22px
-  left: 202px
-  top: calc(100% \- 113px)
-  z-index: 3
-  color: #FFFFFF
-
-.prixNew
-  position: absolute
-  width: 140px
-  height: 71px
-  left: 140px
-  top: calc(100% \- 86px)
-  z-index: 3
-  font-family: Roboto
-  font-style: normal
-  font-weight: normal
-  line-height: normal
-  text-align: center
-  font-size: 14px
-  color: #FFFFFF
-
 .inscription
   position: absolute
   width: 100px
   height: 20px
-  left: 180px
+  left: 220px
   top: 169px
   font-family: Roboto
   font-style: normal
@@ -947,7 +836,7 @@ $fond = #FFFFFF // #F7FAFA
   position: absolute
   width: 128px
   height: 20px
-  left: 50px
+  left: 90px
   top: 169px
   padding-top: 1px
   border-radius: 5px 0px 0px 5px
@@ -959,4 +848,79 @@ $fond = #FFFFFF // #F7FAFA
   font-size: 14px
   text-align: center
   z-index: 4
+
+.cadreInfo
+  position: relative
+  width: 320px
+  margin: 0px
+  margin-top: 180px
+  min-height: 210px
+  margin-bottom: 0px
+  background-color: rgba(251, 251, 251, 1)
+  border: 1px solid rgba(251, 251, 251, 1)
+
+.titreNew
+  display: table
+  position: relative
+  width: 310px
+  height: 55px
+  margin-left: 5px
+  margin-top: 13px
+.titreNew h1
+  display: table-cell
+  vertical-align: middle
+  font-family: Roboto
+  font-style: normal
+  font-weight: 900
+  line-height: normal
+  font-size: 24px
+  text-transform: capitalize
+  color: #000000
+
+.cadreTexte-Ateliers
+  position: relative
+  width: 310px
+  margin-top: 7px
+  margin-bottom: 10px
+  margin: 0px
+  margin-left: 5px
+  font-family: Roboto
+  font-style: normal
+  font-weight: normal
+  line-height: normal
+  font-size: 14px
+  text-align: justify
+
+.piedCadre:
+  position: relative
+  width: 320px
+  min-height: 72px
+  margin: 0px
+  margin-bottom: 4px
+  z-index: 3
+  font-family: Roboto
+  font-style: normal
+  font-weight: normal
+  line-height: normal
+  font-size: 14px
+  text-align: center
+
+.lesCategories
+  text-align: center
+  color: #FFFFFF
+  margin-top: 3px
+  margin-bottom: 5px
+  font-size: 13px
+  font-family: Roboto
+  font-style: normal
+  font-weight: normal
+  line-height: normal
+
+p
+  font-size: 14px
+  font-family: Roboto
+  font-style: normal
+  font-weight: normal
+  line-height: normal
+
 </style>
