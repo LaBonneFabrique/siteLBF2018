@@ -29,6 +29,7 @@
     "vue-lazy-background-images": "^1.0.0",
     "vue-markdown": "^2.2.4",
     "vue-router": "^3.0.1",
+    "vue-stash": "^2.0.1-beta",
     "vue2-dropzone": "^3.0.4",
     "vuelidate": "^0.6.1"
   },
@@ -43,7 +44,8 @@
     "eslint-plugin-promise": "3.4.0",
     "eslint-plugin-standard": "3.0.1",
     "eslint-plugin-vue": "4.0.0",
-    "quasar-cli": "^0.15.20"
+    "quasar-cli": "^0.15.20",
+    "raw-loader": "^0.5.1"
   },
   "engines": {
     "node": ">= 8.9.0",

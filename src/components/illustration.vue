@@ -68,7 +68,7 @@
 import {
   QSpinnerGears
 } from 'quasar'
-import {GET_LISTE_ILLU_FILTRE_ESPACE, ADD_LISTE_ILLU, DELETE_ILLU, DELETE_ILLU_GRAPHQL} from '../constants/illustrationsGraphQL'
+import {GET_LISTE_ILLU_FILTRE_ESPACE, ADD_LISTE_ILLU, DELETE_ILLU, DELETE_ILLU_GRAPHQL} from '../graphQL/illustrations'
 import cloudinary from 'cloudinary-core'
 var cl = new cloudinary.Cloudinary({cloud_name: 'la-bonne-fabrique', secure: true})
 

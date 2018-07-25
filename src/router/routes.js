@@ -11,15 +11,28 @@ export default [
         component: () => import('pages/index')
       },
       {
-        path: '/resetmdp/:uId/:tId',
+        name: 'reset MDP',
+        path: 'resetmdp/:uId/:tId',
         props: true,
         component: () => import('pages/resetMDP')
       }
     ]
   },
   {
+    path: '/atelier',
+    component: () => import('layouts/sansFiltre'),
+    children: [
+      {
+        path: ':idAtelier',
+        name: 'bilanAtelier',
+        props: (route) => ({idAtelier: route.params.idAtelier}),
+        component: () => import('pages/bilanAtelier')
+      }
+    ]
+  },
+  {
     path: '/dashboard',
-    component: () => import('layouts/dashboard'),
+    component: () => import('layouts/dashboardLayout'),
     beforeEnter: requireAuth,
     children: [
       {
@@ -45,8 +58,8 @@ export default [
     children: [
       {
         name: 'accueilAdmin',
-        path: '',
-        component: () => import('pages/admin/index')
+        path: 'lesateliers',
+        component: () => import('pages/admin/listeActivites')
       },
       {
         path: 'listeAdherents',
@@ -65,11 +78,13 @@ export default [
         component: () => import('pages/admin/listeActivites')
       },
       {
+        name: 'modifierAtelier',
         path: 'modifierAtelier/:idAtelier',
         props: (route) => ({idAtelier: route.params.idAtelier, dupliquer: false, type: 'edit'}),
         component: () => import('pages/admin/formulaireActivite')
       },
       {
+        name: 'dupliquerAtelier',
         path: 'dupliquerAtelier/:idAtelier',
         props: (route) => ({idAtelier: route.params.idAtelier, dupliquer: true, type: 'dupliquer'}),
         component: () => import('pages/admin/formulaireActivite')
@@ -89,6 +104,12 @@ export default [
         path: 'listeNews',
         name: 'listeNews',
         component: () => import('pages/admin/listeNews')
+      },
+      {
+        path: 'listeInscrits/:idAtelier',
+        name: 'listeInscrits',
+        props: (route) => ({idAtelier: route.params.idAtelier}),
+        component: () => import('pages/admin/listeInscrits')
       }
     ]
   },
@@ -99,7 +120,7 @@ export default [
 ]
 
 function requireAuth (to, from, next) {
-  if (!auth.loggedIn() || !auth.hasLoggedUser() || to.params.userId !== auth.loggedInUser()) {
+  if (!auth.loggedIn() || to.params.userId !== auth.loggedInUser()) {
     next({
       name: 'accueil',
       query: { redirect: to.fullPath }
@@ -109,8 +130,10 @@ function requireAuth (to, from, next) {
   }
 }
 
-function requireIsAdmin (to, from, next) {
-  if (!auth.isAdmin() || !auth.loggedIn()) {
+async function requireIsAdmin (to, from, next) {
+  let isAdminOrDie = await auth.isAdmin()
+  console.log('isAdmin ?', isAdminOrDie)
+  if (!isAdminOrDie || !auth.loggedIn()) {
     next({
       name: 'accueil',
       query: { redirect: to.fullPath }

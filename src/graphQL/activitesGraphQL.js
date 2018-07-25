@@ -26,8 +26,8 @@ query listeActivites {
 `
 
 export const QUERY_ALL_ACTIVITES_ASC = gql`
-query listeActivites {
-  allActivites(orderBy: dateDebut_ASC, filter: {publie: true}) {
+query listeActivites($aujourdhui: DateTime!) {
+  allActivites(orderBy: dateDebut_ASC, filter: {publie: true, dateDebut_gte: $aujourdhui}) {
     id
     titreActivite
     description
@@ -46,6 +46,31 @@ query listeActivites {
       mail
       participant
       dateUID
+    }
+  }
+}
+`
+
+export const QUERY_ACTIVITE_BY_ID = gql`
+query uneActivite($id: ID!) {
+  allActivites(filter: {id: $id}) {
+    id
+    titreActivite
+    section
+    lieuActivite
+    description
+    illustration
+    prix
+    publie
+    dates
+    inscriptions {
+      id
+      dateUID
+      participant
+      mail
+      profils {
+        id
+      }
     }
   }
 }

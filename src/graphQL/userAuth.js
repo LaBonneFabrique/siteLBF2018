@@ -46,13 +46,44 @@ query trouveUserRole($id: ID!) {
   }
 }
 `
+export const FIND_USER_ROLE2 = gql`
+query trouveUserRole2($id: ID!) {
+  allUsers(filter: {id: $id}) {
+    role
+  }
+}
+`
 
-export const FIND_EMAIL = gql`
+export const FIND_USER_PROFIL = gql`
+query trouverUserProfil($id: ID!) {
+  allUsers(filter: {id: $id}) {
+    role
+    profil {
+      id
+      nom
+      prenom
+      email
+      dateNaissance
+      badges
+    }
+  }
+}
+`
+
+export const FIND_USER_BY_EMAIL = gql`
 query trouveEmail($email: String!) {
   allUsers(filter: {email: $email}) {
     id
     profil {
+      id
       prenom
+      inscriptions {
+        dateUID
+        id
+        activite {
+          id
+        }
+      }
     }
   }
 }
@@ -196,6 +227,37 @@ query getMembre($mId: ID!) {
     email
     dateNaissance
     badges
+  }
+}
+`
+
+export const FIND_COMPLETE_USER_BY_ID = gql`
+query trouveUserComplete2($id: ID!) {
+  allUsers(filter: {id: $id}) {
+    id
+    email
+    qf
+    role
+    profil {
+      id
+      nom
+      prenom
+      email
+      dateNaissance
+      badges
+      inscriptions {
+        id
+        dateUID
+        activite {
+          id
+          titreActivite
+          illustration
+          dateDebut
+          section
+          dates
+        }
+      }
+    }
   }
 }
 `

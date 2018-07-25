@@ -11,7 +11,7 @@
           label="Quotient familial"
           :labelWidth="8"
           class="col-8">
-          <q-input @keydown="keyDown($event, 'qf')" type="number" v-model="profileData.qf"/>
+          <q-input @keydown="keyDown($event, 'qf')" type="number" v-model="user.qf"/>
         </q-field>
 
         <q-btn class="col-2 offset-1" icon="far fa-save" @click="majUser('qf')" dense flat inverted size="20px">
@@ -77,7 +77,7 @@
 
         <q-card-main class="corps">
           <q-list no-border>
-            <q-item dense style="padding: 0px" v-for="(m, index) in profileData.profil" :key="m.id">
+            <q-item dense style="padding: 0px" v-for="(m, index) in user.profil" :key="m.id">
               <q-item-side class="bouton"><q-btn icon="fas fa-edit" flat inverted size="md" dense @click="majMembre(index)"/><q-btn v-if="index > 0" icon="fa-trash" flat inverted size="md" dense @click="effacerMembre(m.id)"/></q-item-side>
               <q-item-main :label="m.prenom" :sublabel="age(m.dateNaissance)"></q-item-main>
               <q-item-side><img :src="avatar(m.id)" width="40" style="margin-right: 5px"/></q-item-side>
@@ -102,8 +102,8 @@
       <span v-if="!$v.membre.dateNaissance.isValideDate">mauvais format</span>
       <div class="row justify-end">
         <q-btn color="amber-8" flat inverted @click="ajoutMembre = false">Annuler</q-btn>
-        <q-btn v-if="membre.id" color="primary" flat inverted @click="ajouterMembre(membre.id)">Modifier</q-btn>
-        <q-btn v-else color="primary" flat inverted @click="ajouterMembre()">Ajouter</q-btn>
+        <q-btn v-if="membre.id" color="primary" flat inverted @click="ajouterMembre(membre.id)" :disable="$v.membre.$invalid">Modifier</q-btn>
+        <q-btn v-else color="primary" flat inverted @click="ajouterMembre()" :disable="$v.membre.$invalid">Ajouter</q-btn>
       </div>
     </q-modal>
             <q-card inline class="carte">
@@ -133,7 +133,7 @@ import {
 import { authMixins } from '../utils/auth.js'
 import { validationMixin } from 'vuelidate'
 import { required, sameAs, minLength, email } from 'vuelidate/lib/validators'
-import { FIND_USER_BY_ID, ADD_MEMBRE, CONNECT_MEMBRE, EFFACE_MEMBRE, MAJ_MEMBRE, MAJ_USER_QF, EFFACER_USER, CHECK_MDP, UPDATE_MDP } from '../graphQL/userAuth'
+import { ADD_MEMBRE, CONNECT_MEMBRE, EFFACE_MEMBRE, MAJ_MEMBRE, MAJ_USER_QF, EFFACER_USER, CHECK_MDP, UPDATE_MDP } from '../graphQL/userAuth'
 
 const isValideDate = value => {
   if (typeof value === 'undefined' || value === null || value === '') {
@@ -148,6 +148,10 @@ export default {
   },
   mixins: [authMixins, validationMixin],
   components: {
+  },
+  store: {
+    user: 'user',
+    estIdentifie: 'estIdentifie'
   },
   created: function () {
     if (this.userId !== this.loggedInUser()) {
@@ -164,7 +168,7 @@ export default {
       ajoutMembre: false,
       membre: {nom: '', prenom: '', email: '', dateNaissance: ''},
       loadingUser: 0,
-      estIdentifie: this.isLoggedIn(),
+      // estIdentifie: this.isLoggedIn(),
       modalModifierMDP: false,
       ancienMDP: '',
       newPassword: '',
@@ -204,9 +208,9 @@ export default {
       }
     }
   },
-  apollo: {
+  /* apollo: {
     allUsers: {
-      query: FIND_USER_BY_ID,
+      query: FIND_COMPLETE_USER_BY_ID,
       variables () {
         return {
           id: this.userId
@@ -231,11 +235,11 @@ export default {
       },
       result (result) {
         this.profileData = Object.assign({}, result.data.allUsers[0])
-        this.profileData.profil = Object.assign({}, result.data.allUsers[0].profil)
-        this.membre.nom = this.profileData.profil[0].nom
+        // this.lesProfils = Object.assign({}, result.data.allUsers[0].profil)
+        // this.membre.nom = this.lesProfils[0].nom
       }
     }
-  },
+  }, */
   methods: {
     ajouterMembre: function (mId) {
       this.ajoutMembre = false
@@ -258,8 +262,13 @@ export default {
             dateNaissance: this.membre.dateNaissance
           }
         }).then((data) => {
+          this.commitUser()
           this.$q.loading.hide()
-          this.$apollo.queries.allUsers.refetch()
+          this.$q.notify({
+            message: 'Mise à jour terminée.',
+            timeout: 2500,
+            type: 'positive'
+          })
         })
       } else {
         this.$q.loading.show({
@@ -288,7 +297,14 @@ export default {
               membreId: membreId
             }
           }).then((data) => {
-            this.$apollo.queries.allUsers.refetch()
+            // this.$apollo.queries.allUsers.refetch()
+            this.commitUser()
+            this.$eventBus.$emit('refreshUser')
+            this.$q.notify({
+              message: 'Enregistrement terminé.',
+              timeout: 2500,
+              type: 'positive'
+            })
           })
         })
       }
@@ -306,21 +322,48 @@ export default {
       return ''
     },
     effacerMembre: function (mId) {
+      this.$q.dialog({
+        title: 'Confirmer',
+        message: 'Effacer ce membre ?',
+        ok: 'Confirmer',
+        cancel: 'Annuler'
+      }).then(() => {
+        this.processEffacerMembre(mId)
+      }).catch(() => {
+      })
+    },
+    processEffacerMembre: function (mId) {
+      this.$q.loading.show({
+        spinner: QSpinnerGears,
+        message: 'Mise à jour de la base en cours...',
+        messageColor: 'white',
+        spinnerSize: 250, // in pixels
+        spinnerColor: 'white',
+        customClass: 'bg-test'
+      })
       this.$apollo.mutate({
         mutation: EFFACE_MEMBRE,
         variables: {
           id: mId
         }
       }).then((data) => {
-        this.$apollo.queries.allUsers.refetch()
+        // this.$apollo.queries.allUsers.refetch()
+        // this.$eventBus.$emit('refreshUser')
+        this.commitUser()
+        this.$q.loading.hide()
+        this.$q.notify({
+          message: 'Modification enregistrée.',
+          timeout: 2500,
+          type: 'positive'
+        })
       })
     },
     majMembre: function (index) {
-      this.membre.nom = this.profileData.profil[index].nom
-      this.membre.prenom = this.profileData.profil[index].prenom
-      this.membre.email = this.profileData.profil[index].email
-      this.membre.dateNaissance = this.profileData.profil[index].dateNaissance
-      this.membre.id = this.profileData.profil[index].id
+      this.membre.nom = this.user.profil[index].nom
+      this.membre.prenom = this.user.profil[index].prenom
+      this.membre.email = this.user.profil[index].email
+      this.membre.dateNaissance = this.user.profil[index].dateNaissance
+      this.membre.id = this.user.profil[index].id
       this.ajoutMembre = true
     },
     majUser: function (type) {
@@ -338,7 +381,7 @@ export default {
             mutation: MAJ_USER_QF,
             variables: {
               id: this.userId,
-              qf: this.profileData.qf
+              qf: this.user.qf
             }
           }).then((data) => {
             this.$q.loading.hide()
@@ -366,20 +409,22 @@ export default {
         this.effacerCompteAction()
       })
     },
-    effacerCompteAction: function () {
+    effacerCompteAction: async function () {
       let promises = []
-      let userId = this.loggedInUser()
-      this.logout()
-      this.$eventBus.$emit('logginState')
-      for (let membre of this.allUsers[0].profil) {
-        promises.push(
-          this.$apollo.mutate({
-            mutation: EFFACE_MEMBRE,
-            variables: {
-              id: membre.id
-            }
-          })
-        )
+      let userId = this.user.id
+      await this.$q.cookies.remove('token', {path: '/'})
+      console.log('user après effacer', this.$q.cookies.has('token'))
+      if (this.user.profil) {
+        for (let membre of this.user.profil) {
+          promises.push(
+            this.$apollo.mutate({
+              mutation: EFFACE_MEMBRE,
+              variables: {
+                id: membre.id
+              }
+            })
+          )
+        }
       }
       promises.push(
         this.$apollo.mutate({

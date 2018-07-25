@@ -149,7 +149,7 @@ export default {
   },
   methods: {
     deconnexion: function () {
-      this.$q.localStorage.clear()
+      this.$q.cookies.remove('token')
       this.$router.push({name: 'accueil'})
     }
   }

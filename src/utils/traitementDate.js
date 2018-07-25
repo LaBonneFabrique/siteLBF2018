@@ -12,6 +12,27 @@ export var traitementDateMixins = {
       const minutesFin = (horaire.max - Math.floor(horaire.max)) > 0 ? '30' : '00'
       return heureDebut + 'h' + minutesDebut + ' - ' + heureFin + 'h' + minutesFin
     },
+    traitementHoraireAdherent (uid, dates) {
+      let retour = ''
+      if (uid) {
+        dates[0].horaires.forEach((horaire) => {
+          if (horaire.uid === uid) {
+            const heureDebut = Math.floor(horaire.creneau.min).toString()
+            const minutesDebut = (horaire.creneau.min - Math.floor(horaire.creneau.min)) > 0 ? '30' : '00'
+            const heureFin = Math.floor(horaire.creneau.max).toString()
+            const minutesFin = (horaire.creneau.max - Math.floor(horaire.creneau.max)) > 0 ? '30' : '00'
+            retour = heureDebut + 'h' + minutesDebut + ' - ' + heureFin + 'h' + minutesFin
+          }
+        })
+      } else {
+        const heureDebut = Math.floor(dates[0].horaires[0].creneau.min).toString()
+        const minutesDebut = (dates[0].horaires[0].creneau.min - Math.floor(dates[0].horaires[0].creneau.min)) > 0 ? '30' : '00'
+        const heureFin = Math.floor(dates[0].horaires[0].creneau.max).toString()
+        const minutesFin = (dates[0].horaires[0].creneau.max - Math.floor(dates[0].horaires[0].creneau.max)) > 0 ? '30' : '00'
+        retour = heureDebut + 'h' + minutesDebut + ' - ' + heureFin + 'h' + minutesFin
+      }
+      return retour
+    },
     horaireLisible: function (debut, fin) {
       let jour = date.formatDate(debut, 'dddd')
       let jourNum = date.formatDate(debut, 'D')
@@ -73,6 +94,24 @@ export var traitementDateMixins = {
     },
     toDateReadable: function (dateToTransform) {
       return date.formatDate(dateToTransform, 'dddd DD MMM', {dayNames: DAYNAMES, monthNames: MONTHNAMESABRV})
+    },
+    listeMois (lesDates) {
+      const n = lesDates.length - 1
+      let retour = ''
+      lesDates.forEach((laDate, index) => {
+        if (index >= 0) retour += this.horaireLisible(laDate.date, laDate.date).jourNum + ' ' + this.horaireLisible(laDate.date, laDate.date).mois
+        if ((index >= 0) && (index < n)) retour += ' - '
+      })
+      return retour
+    },
+    moisPlus (lesDates) {
+      const n = lesDates.length - 1
+      let retour = ''
+      lesDates.forEach((laDate, index) => {
+        if (index > 0) retour += this.horaireLisible(laDate.date, laDate.date).jourNum + ' ' + this.horaireLisible(laDate.date, laDate.date).mois
+        if ((index > 0) && (index < n)) retour += ' - '
+      })
+      return retour
     }
   }
 }

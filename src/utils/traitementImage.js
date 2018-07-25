@@ -1,6 +1,6 @@
 import cloudinary from 'cloudinary-core'
 var cl = new cloudinary.Cloudinary({cloud_name: 'la-bonne-fabrique', secure: true})
-import { GET_ILLU_BY_ID } from '../constants/illustrationsGraphQL'
+import { GET_ILLU_BY_ID } from '../graphQL/illustrations'
 
 export var imageMixins = {
   methods: {

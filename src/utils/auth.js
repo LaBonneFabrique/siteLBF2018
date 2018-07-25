@@ -1,20 +1,21 @@
-import { LocalStorage } from 'quasar'
-import { SIGNUP, AUTHENTIFICATION, FIND_USER_ROLE, MAJ_USER_PROFIL } from '../graphQL/userAuth'
+import { Cookies } from 'quasar'
+import { SIGNUP, AUTHENTIFICATION, FIND_USER_ROLE, MAJ_USER_PROFIL, FIND_COMPLETE_USER_BY_ID } from '../graphQL/userAuth'
 
 export var authMixins = {
   methods: {
     isLoggedIn () {
-      return LocalStorage.has('token')
+      return Cookies.has('token')
+      // return LocalStorage.has('token')
     },
     loggedInUser () {
-      return LocalStorage.get.item('idUser')
+      return Cookies.get('token')
     },
-    userRoles () {
+    userRoles (id) {
       return this.$apollo.query({
         query: FIND_USER_ROLE,
         fetchPolicy: 'network-only',
         variables: {
-          id: LocalStorage.get.item('idUser')
+          id: id
         }
       })
     },
@@ -25,30 +26,46 @@ export var authMixins = {
           email: email,
           password: pwd
         }
-      }).then((data) => {
-        LocalStorage.set('idUser', data.data.authenticateUser.id)
-        LocalStorage.set('token', data.data.authenticateUser.token)
-      }).catch((error) => {
-        console.log(error)
-        throw error
       })
     },
-    signup (email, pwd, nom, prenom) {
+    getUserInfo (id) {
+      return this.$apollo.query({
+        query: FIND_COMPLETE_USER_BY_ID,
+        fetchPolicy: 'network-only',
+        variables: {
+          id: id
+        }
+      })
+    },
+    async commitUser () {
+      let zeUser = await this.getUser()
+      this.$store.user = Object.assign({}, zeUser)
+    },
+    async getUser () {
+      let userLeData = {id: await this.$q.cookies.get('token')}
+      await this.getUserInfo(userLeData.id).then((retour) => {
+        userLeData.profil = retour.data.allUsers[0].profil
+        userLeData.email = retour.data.allUsers[0].email
+        userLeData.qf = retour.data.allUsers[0].qf
+        userLeData.isAdmin = retour.data.allUsers[0].role.indexOf('Admin') >= 0
+      }).catch((error) => console.log('erreur of getUserInfo', error))
+      return userLeData
+    },
+    async signup (email, pwd, nom, prenom) {
+      let id = 'bibi'
       let profil = [{
         nom,
         prenom,
         email
       }]
-      return this.$apollo.mutate({
+      await this.$apollo.mutate({
         mutation: SIGNUP,
         variables: {
           email: email,
           password: pwd
         }
       }).then((data) => {
-        LocalStorage.set('idUser', data.data.signupUser.id)
-        LocalStorage.set('token', data.data.signupUser.token)
-        LocalStorage.set('roles', ['Utilisateur'])
+        id = data.data.signupUser.id
         this.$apollo.mutate({
           mutation: MAJ_USER_PROFIL,
           variables: {
@@ -56,25 +73,16 @@ export var authMixins = {
             profil: profil,
             role: ['Utilisateur']
           }
-        })
+        }).then()
       })
+      return id
     },
     logout (cb) {
-      LocalStorage.remove('token')
-      LocalStorage.remove('idUSer')
+      this.$q.cookies.remove('token')
       if (cb) cb()
     },
-    isAdmin () {
-      if (!LocalStorage.has('roles')) {
-        LocalStorage.clear()
-        return false
-      }
-      let roles = LocalStorage.get.item('roles')
-      if (roles.indexOf('Admin') >= 0) {
-        return true
-      } else {
-        return false
-      }
+    getMail (profil) {
+      return profil[0].email
     }
   }
 }

@@ -22,3 +22,42 @@ mutation effaceInscription ($id: ID!) {
   }
 }
 `
+
+export const CONNECT_ACTIVITE_INSCRIPTION = gql`
+mutation connectActiviteInscription($aId: ID!, $iId: ID!) {
+  addToInscriptionsActivites(
+    inscriptionsInscriptionId: $iId
+    activiteActiviteId: $aId
+  ) {
+    activiteActivite {
+      id
+    }
+    inscriptionsInscription {
+      id
+    }
+  }
+}
+`
+
+export const AJOUT_INSCRIPTION_UID = gql`
+mutation addInscription($participant: String!, $mail: String!, $dateUID: String!) {
+  createInscription(
+  participant: $participant
+  mail: $mail
+  dateUID: $dateUID
+  ) {
+    id
+  }
+}
+`
+
+export const AJOUT_INSCRIPTION_NO_UID = gql`
+mutation addInscription($participant: String!, $mail: String!) {
+  createInscription(
+  participant: $participant
+  mail: $mail
+  ) {
+    id
+  }
+}
+`

@@ -17,6 +17,12 @@ query singleActivite($id: ID!) {
     dates
     dateDebut
     maxParticipants
+    inscriptions {
+      id
+      participant
+      mail
+      dateUID
+    }
   }
 }
 `

@@ -122,11 +122,17 @@
                 style="margin-bottom: 10px; margin-top: 10px"
                 icon-color="primary"
                 >
-                <choix-dates :propDates="lesDates" v-on:remove="(val) => {removeHoraire(val)}" ></choix-dates>
+                <choix-dates :propDates="lesDates" v-on:remove="(val) => {removeHoraire(val)}" v-if="!existeInscrits || dupliquer"></choix-dates>
             </q-field>
-          <q-chip v-for="(laDate, index) in lesDates" :key="toTimeStamp(laDate.date)+'pr'" closable square color="primary" @hide="removeHoraire(index)" class="offset-1">
+          <q-chip v-for="(laDate, index) in lesDates" :key="toTimeStamp(laDate.date)+'pr'" closable square color="primary" @hide="removeHoraire(index)" class="offset-1" v-if="!existeInscrits || dupliquer">
         {{toDateReadable(laDate.date)}}
       </q-chip>
+      <q-chip v-for="(laDate, index) in lesDates" :key="toTimeStamp(laDate.date)+'pr'" square color="primary" @hide="removeHoraire(index)" class="offset-1" v-if="existeInscrits && !dupliquer">
+        {{toDateReadable(laDate.date)}}
+      </q-chip>
+      <div v-if="existeInscrits && !dupliquer" class="offset-1" style="margin-top: 4px">
+        <q-icon color="secondary" name="fas fa-exclamation-triangle"></q-icon>
+        Cet atelier a déjà des inscrit, les dates ne peuvent être changées.</div>
           <q-field
       icon='fas fa-euro-sign'
       label="Prix"
@@ -309,9 +315,9 @@ import choixDates from '../../components/choixDates'
 import {DEMINER_HTML} from '../../graphQL/sanitize'
 import {ADD_EVENT, UPDATE_EVENT, DELETE_EVENT} from '../../graphQL/googleAgendaGraphQL'
 import { LISTE_ESPACEBF } from '../../constants/listeEnums'
-import { GET_LISTE_ILLU_FILTRE_ESPACE, ADD_LISTE_ILLU, DELETE_ILLU_GRAPHQL, DELETE_ILLU } from '../../constants/illustrationsGraphQL'
+import { GET_LISTE_ILLU_FILTRE_ESPACE, ADD_LISTE_ILLU, DELETE_ILLU_GRAPHQL, DELETE_ILLU } from '../../graphQL/illustrations'
 import { QUERY_ACTIVITE_BY_ID, UPDATE_ACTIVITE, ADD_ACTIVITE } from '../../graphQL/activitesAdmin'
-// import { ADD_AGENDA, REMOVE_AGENDA } from '../../graphQL/gestionAgenda'
+
 import { genURLImageMixins } from '../../utils/genURLImage'
 import { parseMarkdownMixins } from '../../utils/parseMarkdown'
 import { traitementDateMixins } from '../../utils/traitementDate'
@@ -368,7 +374,8 @@ export default {
       horaire: {min: 9, max: 10},
       maxParticipants: 8,
       lesDates: [],
-      horaires: [{creneau: {min: 14, max: 16}}]
+      horaires: [{creneau: {min: 14, max: 16}}],
+      existeInscrits: false
     }
   },
   apollo: {
@@ -386,7 +393,8 @@ export default {
       query: GET_LISTE_ILLU_FILTRE_ESPACE,
       variables () {
         return {
-          espace: this.dataEvent.section
+          espace: this.dataEvent.section,
+          typeIllu: 'Atelier'
         }
       },
       loadingKey: 'loadIllu',
@@ -438,6 +446,7 @@ export default {
       },
       update (data) {
         Object.assign(this.dataEvent, data.allActivites[0])
+        this.existeInscrits = this.dataEvent.inscriptions.length > 0
         this.maxParticipants = this.dataEvent.maxParticipants
         this.horaires = []
         this.dataEvent.dates[0].horaires.forEach((horaire) => this.horaires.push(
@@ -518,7 +527,8 @@ export default {
         variables: {
           idImage: response.public_id,
           format: response.format,
-          espace: this.dataEvent.section
+          espace: this.dataEvent.section,
+          typeIllu: 'Atelier'
         },
         updateQueries: {
         }
@@ -562,19 +572,14 @@ export default {
       })
     },
     effaceImageDialogue (id, imageId) {
-      this.$q.dialog.create({
+      this.$q.dialog({
         title: 'Confirmer',
         message: 'Effacer cette image ?',
-        buttons: [
-          'Annuler',
-          {
-            label: 'Effacer',
-            handler: () => {
-              this.effaceImage(id, imageId)
-            }
-          }
-        ]
-      })
+        ok: 'Confirmer',
+        cancel: 'Annuler'
+      }).then(() => {
+        this.effaceImage(id, imageId)
+      }).catch(() => {})
     },
     async sauvegardeActivite (publie) {
       let descriptionDemine = ''
@@ -917,12 +922,12 @@ export default {
   text-align: left
 
 #illuDropzone
-  border-radius: 10%;
-  border-style: dashed;
-  width: 150px !important;
-  height: 150px;
-  margin-left: 10px;
-  margin-top: 5px;
+  border-radius: 10%
+  border-style: dashed
+  width: 150px !important
+  height: 150px
+  margin-left: 10px
+  margin-top: 5px
 
 #illuProcessing
   width: 150px

@@ -5,7 +5,8 @@ module.exports = function (ctx) {
     plugins: [
       'apollo',
       'eventBus',
-      'head'
+      'head',
+      'store'
     ],
     css: [
       'app.styl'
@@ -25,6 +26,7 @@ module.exports = function (ctx) {
     build: {
       scopeHoisting: true,
       vueRouterMode: 'history',
+      path: '/',
       gzip: true,
       analyze: {analyzerMode: 'server', analyzerHost: '0.0.0.0', analyzerPort: '8080' },
       // extractCSS: false,
@@ -35,6 +37,10 @@ module.exports = function (ctx) {
           test: /\.(js|vue)$/,
           loader: 'eslint-loader',
           exclude: /(node_modules|quasar)/
+        })
+        cfg.module.rules.push({
+          test: /\.txt$/,
+          loader: 'raw-loader'
         })
       }
     },
@@ -57,6 +63,7 @@ module.exports = function (ctx) {
         'QLayoutDrawer',
         'QPageContainer',
         'QPage',
+        'QPageSticky',
         'QToolbar',
         'QToolbarTitle',
         'QBtn',
@@ -94,7 +101,17 @@ module.exports = function (ctx) {
         'QRouteTab',
         'QEditor',
         'QAutocomplete',
-        'QBtnDropdown'
+        'QBtnDropdown',
+        'QOptionGroup',
+        'QItemSeparator',
+        'QBtnGroup',
+        'QCarousel',
+        'QCarouselSlide',
+        'QCarouselControl',
+        'QFab',
+        'QFabAction',
+        'QWindowResizeObservable',
+        'QSearch'
       ],
       directives: [
         'Ripple'
@@ -103,7 +120,8 @@ module.exports = function (ctx) {
         'Notify',
         'LocalStorage',
         'Loading',
-        'Dialog'
+        'Dialog',
+        'Cookies'
       ],
       directives: ['CloseOverlay']
     },
