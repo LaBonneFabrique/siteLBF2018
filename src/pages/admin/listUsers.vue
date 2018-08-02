@@ -34,12 +34,12 @@
     color="atelier" size="18px"
     class="q-ml-sm q-mb-xs bouton"
     @click.native="effacerInscrit(props.row.id, props.row.famille)"
-    v-if="!currentUser(props.row.id)"></q-icon>
+    :disable="!currentUser(props.row.id)"></q-icon>
   <q-icon name="fas fa-at"
     color="primary" size="18px"
     class="q-ml-sm q-mb-xs bouton"
     @click.native="redigerMail(props.row.email)"
-    v-if="!currentUser(props.row.id)"></q-icon>
+    :disable="!currentUser(props.row.id)"></q-icon>
   </q-td>
   </q-table>
       <q-modal v-model="modalRedaction" position="top" :content-css="{padding: '20px', 'max-width': '480px', 'min-width': '320px'}" maximized @hide="listeMails = []">

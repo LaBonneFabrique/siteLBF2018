@@ -46,13 +46,11 @@ export default {
     if (this.loggedIn()) {
       let id = await Cookies.get('token')
       await this.userRoles(id).then((retour) => {
-        console.log('retour', retour)
         if (retour.data.allUsers[0].role.indexOf('Admin') >= 0) {
           leRetour = true
         }
       })
     }
-    console.log(leRetour)
     return leRetour
   }
 }

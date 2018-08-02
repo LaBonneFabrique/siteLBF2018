@@ -8,6 +8,25 @@ export default [
       {
         name: 'accueil',
         path: '',
+        props: false,
+        component: () => import('pages/index')
+      },
+      {
+        name: 'verifAbonnements',
+        path: 'abonnements',
+        props: (route) => ({abonnement: true}),
+        component: () => import('pages/index')
+      },
+      {
+        name: 'verifAbonnementMail',
+        path: 'abonnements/:mML',
+        props: (route) => ({abonnement: true, mML: route.params.mML}),
+        component: () => import('pages/index')
+      },
+      {
+        name: 'annulerAbonnementsMail',
+        path: 'annulerAbonnements/:mML',
+        props: (route) => ({annulerAbonnements: true, mML: route.params.mML}),
         component: () => import('pages/index')
       },
       {
@@ -15,6 +34,18 @@ export default [
         path: 'resetmdp/:uId/:tId',
         props: true,
         component: () => import('pages/resetMDP')
+      }
+    ]
+  },
+  {
+    path: '/lettreDiffusion',
+    component: () => import('layouts/sansFiltre'),
+    children: [
+      {
+        path: ':ldId',
+        name: 'VisuLettreDiffusion',
+        props: true,
+        component: () => import('pages/lettreInfo')
       }
     ]
   },
@@ -110,6 +141,24 @@ export default [
         name: 'listeInscrits',
         props: (route) => ({idAtelier: route.params.idAtelier}),
         component: () => import('pages/admin/listeInscrits')
+      },
+      {
+        path: 'mailing/:mailId',
+        name: 'mailing',
+        props: true,
+        component: () => import('pages/admin/envoiML')
+      },
+      {
+        path: 'newMailing',
+        name: 'newMailing',
+        props: false,
+        component: () => import('pages/admin/envoiML')
+      },
+      {
+        path: 'listeMailings',
+        name: 'listeMailings',
+        props: false,
+        component: () => import('pages/admin/listeLettres')
       }
     ]
   },
@@ -132,7 +181,6 @@ function requireAuth (to, from, next) {
 
 async function requireIsAdmin (to, from, next) {
   let isAdminOrDie = await auth.isAdmin()
-  console.log('isAdmin ?', isAdminOrDie)
   if (!isAdminOrDie || !auth.loggedIn()) {
     next({
       name: 'accueil',

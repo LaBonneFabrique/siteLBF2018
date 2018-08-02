@@ -224,6 +224,9 @@
         <q-btn label="Fermer" icon="fas fa-times" outline color="primary" @click="modalVerifInscriptions = false" class="float-right"/>
       </div>
     </q-modal>
+    <q-modal v-model="modalinscriptionMailingList" position="top" :content-css="{padding: '20px', 'max-width': '480px'}">
+      <inscriptionMailingList :mML="mML" :effacerAbonnement="effacerAbonnement" ></inscriptionMailingList>
+    </q-modal>
   </q-page>
 </template>
 
@@ -242,17 +245,20 @@ import { parseMarkdownMixins } from '../utils/parseMarkdown'
 import { traitementDateMixins } from '../utils/traitementDate'
 
 import lazyBackground from '../components/VueLazyBackgroundImage'
+import inscriptionMailingList from '../components/inscriptionMailingList'
 import { validationMixin } from 'vuelidate'
 import { required, email } from 'vuelidate/lib/validators'
 
 export default {
   mixins: [authMixins, qfMixins, genURLImageMixins, parseMarkdownMixins, traitementDateMixins, validationMixin],
   props: {
-    userData: Object,
-    mailVerifInscription: String
+    abonnement: Boolean,
+    annulerAbonnements: Boolean,
+    mML: String
   },
   components: {
-    lazyBackground
+    lazyBackground,
+    inscriptionMailingList
   },
   store: {
     user: 'user',
@@ -285,7 +291,9 @@ export default {
       aujourdhui: date.formatDate(date.subtractFromDate(Date.now(), { days: 1 }), 'YYYY-MM-DDTHH:mm:ss.SSSZ'),
       leProfil: this.estIdentifie ? this.user : [],
       flagProfilNonIdentifie: false,
-      personneInscrite: false
+      personneInscrite: false,
+      modalinscriptionMailingList: false,
+      effacerAbonnement: false
     }
   },
   validations: {
@@ -312,6 +320,14 @@ export default {
     }
   },
   created () {
+    if (this.mML && this.annulerAbonnements) {
+      this.effacerAbonnement = true
+    }
+    if (this.abonnement) this.modalinscriptionMailingList = true
+    this.$eventBus.$on('finML', () => {
+      console.log('oups finML')
+      this.modalinscriptionMailingList = false
+    })
     /* this.$eventBus.$on('filtreTypes', (filtres) => {
       if (filtres.length === 0) {
         this.listeFiltreTypes = []
@@ -335,16 +351,10 @@ export default {
       this.listeInscriptionEnCours(email)
     })
   },
-  mounted () {
-    /* if (this.estIdentifie) {
-      this.mailInscription = this.$q.localStorage.get.item('email')
-    } else { this.mailInscription = '' } */
-  },
   beforeDestroy () {
-    // this.$eventBus.$off('logginState')
     this.$eventBus.$off('filtreTypes')
     this.$eventBus.$off('filtreMenu')
-    // this.$eventBus.$off('verifInscription')
+    this.$eventBus.$off('finML')
   },
   apollo: {
     allActivites: {
@@ -411,6 +421,7 @@ export default {
             })
           })
           if (this.mailVerifInscrit !== '' && !this.estIdentifie) this.listeInscriptionEnCours(this.mailVerifInscrit)
+          console.log('apollo', activite.checkInscription)
           switch (activite.type) {
             case 'Ateliers':
               this.affichageActivites.push(

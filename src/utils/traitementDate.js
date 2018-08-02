@@ -37,6 +37,7 @@ export var traitementDateMixins = {
       let jour = date.formatDate(debut, 'dddd')
       let jourNum = date.formatDate(debut, 'D')
       let mois = date.formatDate(debut, 'MMMM')
+      let annee = date.formatDate(debut, 'YYYY')
       switch (mois) {
         case 'Janvier':
           mois = 'Janv'
@@ -65,7 +66,7 @@ export var traitementDateMixins = {
       let heureFin = date.formatDate(fin, 'HH')
       let minFin = date.formatDate(fin, 'mm')
       let horaire = heureDebut + 'h' + minDebut + '-' + heureFin + 'h' + minFin
-      return {horaire: horaire, jour: jour, jourNum: jourNum, mois: mois}
+      return {horaire: horaire, jour: jour, jourNum: jourNum, mois: mois, annee: annee}
     },
     afficheHeure: function (nombre) {
       let heureMinute = this.decimalToHeure(nombre)

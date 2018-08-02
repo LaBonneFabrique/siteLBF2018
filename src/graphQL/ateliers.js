@@ -48,9 +48,9 @@ query listeActivites($aujourdhui: DateTime!) {
   allActivites(orderBy: dateDebut_ASC, filter: {publie: true, dateDebut_gte: $aujourdhui}) {
     id
     titreActivite
+    checkInscription
     description
     section
-    checkInscription
     lieuActivite
     illustration
     publie

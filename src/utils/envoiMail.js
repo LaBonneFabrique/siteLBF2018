@@ -31,7 +31,7 @@ export var mailMixins = {
         variables: {
           tag: 'resetMDP',
           from: 'lasalledesmachines@labonnefabrique.fr',
-          to: [email],
+          to: email,
           subject: leTitre,
           html: leMessage
         }

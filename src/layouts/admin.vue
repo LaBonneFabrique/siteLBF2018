@@ -25,7 +25,7 @@
       </q-btn>
       <q-btn-dropdown
       icon="fas fa-cogs"
-      color = "grey"
+      color = "atelier"
       flat inverted dense
       size = "xl"
       >
@@ -48,7 +48,33 @@
     </q-item>
   </q-list>
       </q-btn-dropdown>
-      <q-btn-dropdown
+            <q-btn-dropdown
+        icon="fas fa-at"
+      color = "primary"
+        flat inverted dense
+        size = "xl"
+      >
+      <q-list link class="shadow-1">
+          <q-item v-close-overlay :to="{name: 'listeMailings'}">
+              <q-item-side>
+          <q-icon name="fas fa-th-list" />
+        </q-item-side>
+        <q-item-main>
+          <q-item-tile label>Toutes les lettres</q-item-tile>
+        </q-item-main>
+      </q-item>
+      <q-item v-close-overlay :to="{name: 'newMailing'}">
+            <q-item-side>
+        <q-icon name="fas fa-plus" />
+      </q-item-side>
+      <q-item-main>
+        <q-item-tile label>Nouvelle lettre</q-item-tile>
+      </q-item-main>
+    </q-item>
+      </q-list>
+        <q-tooltip anchor="bottom middle" self="top middle">Lettres d'informations</q-tooltip>
+      </q-btn-dropdown>
+      <!-- <q-btn-dropdown
         icon="far fa-newspaper"
       color = "grey"
         flat inverted dense
@@ -72,17 +98,17 @@
       </q-item-main>
     </q-item>
   </q-list>
-      </q-btn-dropdown>
+      </q-btn-dropdown> -->
             <q-btn
         icon="fas fa-users"
-        color = "grey"
+        color = "tertiary"
         flat inverted dense
         size = "xl"
         @click="$router.push({name: 'listeUsers'})"
       >
         <q-tooltip anchor="bottom middle" self="top middle">Les adhérents</q-tooltip>
       </q-btn>
-      <q-btn
+     <!-- <q-btn
         icon="fas fa-bullhorn"
         color = "grey"
         flat inverted dense
@@ -92,15 +118,6 @@
       >
         <q-chip floating color="dark" small square class="shadow-1">2</q-chip>
         <q-tooltip anchor="bottom middle" self="top middle">Les petites annonces</q-tooltip>
-      </q-btn>
-      <q-btn
-        icon="fas fa-at"
-      color = "grey"
-        flat inverted dense
-        disable
-        size = "xl"
-      >
-        <q-tooltip anchor="bottom middle" self="top middle">Envoyer un mail</q-tooltip>
       </q-btn>
       <q-btn
         icon="far fa-images"
@@ -119,10 +136,10 @@
         size = "xl"
       >
         <q-tooltip anchor="bottom middle" self="top middle">Gérer les tags</q-tooltip>
-      </q-btn>
+      </q-btn> -->
       <q-btn
         icon="fas fa-sign-out-alt"
-      color = "grey"
+      color = "secondary"
         flat inverted dense
         size = "xl"
         @click="deconnexion()"
@@ -133,7 +150,7 @@
     </q-layout-header>
     <q-page-container>
       <!-- This is where pages get injected -->
-      <router-view />
+      <router-view></router-view>
     </q-page-container>
 
   </q-layout>
@@ -159,4 +176,6 @@ export default {
 <style lang="stylus">
 @import '~variables'
 
+.text-atelier
+  color: $atelier
 </style>
