@@ -31,8 +31,7 @@
     "vue-router": "^3.0.1",
     "vue-stash": "^2.0.1-beta",
     "vue2-dropzone": "^3.0.4",
-    "vuelidate": "^0.6.1",
-    "quasar-framework": "0.15.20"
+    "vuelidate": "^0.6.1"
   },
   "devDependencies": {
     "babel-eslint": "8.2.1",
